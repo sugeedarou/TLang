@@ -2,7 +2,7 @@ from csv import DictReader
 
 chars = set()
 
-with open('data/data_clean.csv', 'r', encoding='utf-8', newline='') as f:
+with open('../data/data_clean.csv', 'r', encoding='utf-8', newline='') as f:
      reader = DictReader(f, delimiter=',')
      
      i = 0
