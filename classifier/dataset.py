@@ -35,7 +35,7 @@ class Dataset(torch.utils.data.Dataset):
         id, lang, text = self.ds[i]
         lang = Dataset.class_names.index(lang)
         text = [indexOrLast(c) for c in text]
-        text = text[:100] # limit to 100 characters
+        text = text[:TWEET_MAX_CHARACTERS]
         text = Fun.one_hot(torch.tensor(text), num_classes=Dataset.characters_count + 1).float()
         return id, lang, text
 

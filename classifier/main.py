@@ -10,7 +10,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 num_epochs = 100
-batch_size = 16
+batch_size = 32
 lr = 1e-3
 
 dm = DataModule(batch_size)
@@ -35,6 +35,7 @@ if __name__ == '__main__':
                          devices=1,
                          max_epochs=num_epochs,
                          precision=16,
+                         num_sanity_val_steps=0,
                          callbacks=[ModelCheckpoint(monitor='val_loss'),
                                     EarlyStopping(monitor='val_loss', patience=3)])
     

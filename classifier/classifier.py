@@ -25,14 +25,14 @@ class Classifier(pl.LightningModule):
     def training_step(self, batch, step_index):
         self.model.train()
         loss, accuracy = self.calculate_metrics(batch, mode='train')
-        # self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=False)
+        self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=False)
         return loss
 
     def validation_step(self, batch, step_index):
         self.model.eval()
         loss, accuracy = self.calculate_metrics(batch, mode='val')
-        # self.log('val_loss', loss, on_epoch=True, prog_bar=True, logger=False)
-        # self.log('val_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_loss', loss, on_epoch=True, prog_bar=True, logger=False)
+        self.log('val_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
         return {'val_loss': loss, 'val_accuracy': accuracy}
 
     # def training_epoch_end(self, outputs):
@@ -64,10 +64,3 @@ class Classifier(pl.LightningModule):
 
     def configure_optimizers(self):
         return self.optimizer
-
-    # hide v_num in progres bar in terminal window
-    def get_progress_bar_dict(self):
-        tqdm_dict = super().get_progress_bar_dict()
-        if 'v_num' in tqdm_dict:
-            del tqdm_dict['v_num']
-        return tqdm_dict
