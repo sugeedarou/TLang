@@ -1,5 +1,6 @@
 from data_module import DataModule
 from classifier import Classifier
+from dataset import Dataset
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -16,7 +17,7 @@ dm = DataModule(batch_size)
 
 def show_confusion_matrix(confmat):
     plt.figure(figsize=(15,10))
-    class_names = dm.get_class_names()
+    class_names = Dataset.class_names
     df_cm = pd.DataFrame(confmat, index=class_names, columns=class_names).astype(int)
     cmap = sns.cubehelix_palette(light=1, as_cmap=True)
     heatmap = sns.heatmap(df_cm, annot=True, cbar=False, fmt="d", cmap=cmap)
@@ -28,15 +29,16 @@ def show_confusion_matrix(confmat):
 
 
 if __name__ == '__main__':
-    model = Classifier(batch_size)
+    model = Classifier(batch_size, lr)
 
-    trainer = pl.Trainer(gpus=1,
+    trainer = pl.Trainer(accelerator='gpu',
+                         devices=1,
                          max_epochs=num_epochs,
                          precision=16,
                          callbacks=[ModelCheckpoint(monitor='val_loss'),
                                     EarlyStopping(monitor='val_loss', patience=3)])
     
     trainer.fit(model, dm)
-    trainer.test(datamodule=dm)
+    # trainer.test(datamodule=dm)
     confmat = model.confmat_metric.compute()
     show_confusion_matrix(confmat)
