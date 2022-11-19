@@ -1,9 +1,8 @@
 import torch
 import csv
-import pickle
-from settings import *
 import torch.nn.functional as Fun
-from torch.nn.utils.rnn import pad_sequence
+
+from settings import *
 
 
 class Dataset(torch.utils.data.Dataset):

@@ -29,7 +29,7 @@ class DataModule(pl.LightningDataModule):
             return random_split(ds, [train_count, val_count])
 
         self.train_ds, self.val_ds = split_train_val(Dataset(TRAIN_VAL_PATH))
-        # self.test_ds  = Dataset(TEST_PATH)
+        self.test_ds  = Dataset(TEST_PATH)
 
         self.loader_args = {'batch_size': self.batch_size,
                             'collate_fn': collate_fn,
@@ -45,6 +45,6 @@ class DataModule(pl.LightningDataModule):
         return DataLoader(dataset=self.val_ds,
                           **self.loader_args)
 
-    # def test_dataloader(self):
-    #     return DataLoader(dataset=self.test_ds,
-    #                       **self.loader_args)
+    def test_dataloader(self):
+        return DataLoader(dataset=self.test_ds,
+                          **self.loader_args)

@@ -1,7 +1,3 @@
-from data_module import DataModule
-from classifier import Classifier
-from dataset import Dataset
-
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
@@ -9,14 +5,18 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-num_epochs = 100
+from data_module import DataModule
+from classifier import Classifier
+from dataset import Dataset
+
+num_epochs = 4
 batch_size = 32
 lr = 1e-3
 
 dm = DataModule(batch_size)
 
 def show_confusion_matrix(confmat):
-    plt.figure(figsize=(15,10))
+    plt.figure(figsize=(15,15))
     class_names = Dataset.class_names
     df_cm = pd.DataFrame(confmat, index=class_names, columns=class_names).astype(int)
     cmap = sns.cubehelix_palette(light=1, as_cmap=True)
@@ -27,7 +27,6 @@ def show_confusion_matrix(confmat):
     plt.xlabel('Predicted label')
     plt.show()
 
-
 if __name__ == '__main__':
     model = Classifier(batch_size, lr)
 
@@ -36,10 +35,11 @@ if __name__ == '__main__':
                          max_epochs=num_epochs,
                          precision=16,
                          num_sanity_val_steps=0,
+                        #  resume_from_checkpoint='lightning_logs/version_5/checkpoints/epoch=0-step=1375.ckpt',
                          callbacks=[ModelCheckpoint(monitor='val_loss'),
                                     EarlyStopping(monitor='val_loss', patience=3)])
     
     trainer.fit(model, dm)
-    # trainer.test(datamodule=dm)
+    trainer.test(datamodule=dm)
     confmat = model.confmat_metric.compute()
     show_confusion_matrix(confmat)

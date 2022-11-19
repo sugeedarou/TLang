@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchmetrics.functional as FM
 import pytorch_lightning as pl
 import torch.nn.functional as Fun
+from torchmetrics import ConfusionMatrix
 
 from settings import *
 from models.gru import GRUModel
@@ -19,16 +20,16 @@ class Classifier(pl.LightningModule):
         self.model = GRUModel(self.num_classes)
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        # self.confmat_metric = ConfusionMatrix(num_classes=self.num_classes)
+        self.confmat_metric = ConfusionMatrix(num_classes=self.num_classes)
         # self.f1_metric = F1(num_classes=self.num_classes)
 
-    def training_step(self, batch, step_index):
+    def training_step(self, batch, _step_index):
         self.model.train()
         loss, accuracy = self.calculate_metrics(batch, mode='train')
         self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=False)
         return loss
 
-    def validation_step(self, batch, step_index):
+    def validation_step(self, batch, _step_index):
         self.model.eval()
         loss, accuracy = self.calculate_metrics(batch, mode='val')
         self.log('val_loss', loss, on_epoch=True, prog_bar=True, logger=False)
@@ -47,8 +48,8 @@ class Classifier(pl.LightningModule):
     def test_step(self, batch, _):
         self.model.eval()
         loss, accuracy = self.calculate_metrics(batch, mode='test')
-        # self.log('test_loss', loss, on_epoch=True, prog_bar=True, logger=True)
-        # self.log('test_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
+        self.log('test_loss', loss, on_epoch=True, prog_bar=True, logger=True)
+        self.log('test_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
 
     def calculate_metrics(self, batch, mode):
         _, _, labels, texts = batch
@@ -57,10 +58,10 @@ class Classifier(pl.LightningModule):
         loss = self.criterion(out, labels_one_hot)
         preds = out.argmax(1)
         accuracy = FM.accuracy(preds, labels)
+        if mode == 'test':
+            self.confmat_metric(preds, labels)
+        
         return loss, accuracy
-
-    def remove_padding(self, tensor, lengths):
-        return [tensor[i][:lengths[i]] for i in range(tensor.size(0))]
 
     def configure_optimizers(self):
         return self.optimizer

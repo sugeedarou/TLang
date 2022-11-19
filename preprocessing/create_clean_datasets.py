@@ -36,7 +36,7 @@ def create_clean_dataset(in_path, out_path):
             'text': text
         })
 
-        # if i > 1000:
+        # if i > 300:
         #     break
         # i += 1
     
@@ -44,6 +44,6 @@ def create_clean_dataset(in_path, out_path):
     f_out.close()
 
 
-create_clean_dataset('../data/raw/sampled_data.csv', '../data/train_val.csv')
-# create_clean_dataset('data/raw/recall_data.csv', 'data/test.csv')
+# create_clean_dataset('../data/raw/sampled_data.csv', '../data/train_val.csv')
+create_clean_dataset('../data/raw/recall_data.csv', '../data/test.csv')
 print('done')
