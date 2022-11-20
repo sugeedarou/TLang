@@ -4,6 +4,8 @@ import torchmetrics.functional as FM
 import pytorch_lightning as pl
 import torch.nn.functional as Fun
 from torchmetrics import ConfusionMatrix
+from sklearn.utils import class_weight
+from csv import DictReader
 
 from settings import *
 from models.gru import GRUModel
@@ -18,10 +20,27 @@ class Classifier(pl.LightningModule):
         self.lr = lr
         self.num_classes = Dataset.class_count
         self.model = GRUModel(self.num_classes)
+        class_weights = torch.tensor([4.6198e+01, 3.3204e+01, 2.5916e+01, 1.5399e+01, 5.5243e-02, 5.3127e+02,
+                        2.9515e+01, 5.9030e+01, 4.1998e+00, 3.2198e+01, 9.4870e+00, 5.0597e+01,
+                        2.3353e+00, 3.0358e+01, 3.1251e+01, 2.2044e+00, 2.1251e+02, 1.7249e+00,
+                        3.3204e+01, 4.4458e+00, 1.0625e+03, 9.6595e+01, 1.3282e+02, 8.1734e+01,
+                        5.5923e+01, 6.2503e+01, 3.8401e-01, 3.2198e+01, 4.4476e-01, 3.5418e+02,
+                        7.0367e+00, 2.6564e+02, 1.4965e+01, 1.7709e+02, 1.6065e-01, 9.3353e-02,
+                        1.2213e+01, 8.4329e+00, 1.4148e+00, 1.0700e+00, 3.1251e+01, 3.2198e+01,
+                        2.1509e+00, 9.6595e+01, 1.0139e+00, 2.7245e+01])
+        # self.criterion = nn.CrossEntropyLoss(weight=class_weights,reduction='mean')
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         self.confmat_metric = ConfusionMatrix(num_classes=self.num_classes)
         # self.f1_metric = F1(num_classes=self.num_classes)
+
+    def calculate_class_weights(self):
+        train_val_ds = Dataset(TRAIN_VAL_PATH)
+        labels = [item[1] for item in train_val_ds]
+        class_weights=class_weight.compute_class_weight(class_weight='balanced',classes=range(Dataset.class_count),y=labels)
+        class_weights=torch.tensor(class_weights,dtype=torch.float)
+        print(class_weights)
+        return class_weights
 
     def training_step(self, batch, _step_index):
         self.model.train()
