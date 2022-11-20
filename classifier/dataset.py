@@ -16,27 +16,25 @@ class Dataset(torch.utils.data.Dataset):
         super().__init__()
 
         def load_data(path):
+            data = []
             with open(path, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
                 next(reader)
-                return [l for l in reader]
+                for row in reader:
+                    id, lang, text = row
+                    lang = int(lang)
+                    text = [int(c) for c in text.split(' ')]
+                    text = text[:TWEET_MAX_CHARACTERS]
+                    text = torch.tensor(text)
+                    text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
+                    data.append([id, lang, text])
+            return data
 
         self.ds = load_data(path)
         self.n_records = len(self.ds)
 
     def __getitem__(self, i):
-        def indexOrLast(c):
-            try:
-                return Dataset.characters.index(c)
-            except ValueError:
-                return Dataset.characters_count
-    
-        id, lang, text = self.ds[i]
-        lang = Dataset.class_names.index(lang)
-        text = [indexOrLast(c) for c in text]
-        text = text[:TWEET_MAX_CHARACTERS]
-        text = Fun.one_hot(torch.tensor(text), num_classes=Dataset.characters_count + 1).float()
-        return id, lang, text
+        return self.ds[i]
 
     def __len__(self):
         return self.n_records
