@@ -7,7 +7,7 @@ from settings import *
 
 class Dataset(torch.utils.data.Dataset):
 
-    class_names = ['lt', 'cy', 'da', 'ca', 'en', 'hy', 'uk', 'bg', 'nl', 'no', 'ht', 'vi', 'ko', 'fi', 'lv', 'th', 'sr', 'tl', 'eu', 'de', 'si', 'ta', 'bn', 'ur', 'fa', 'is', 'pt', 'ro', 'ar', 'km', 'pl', 'mr', 'hi', 'ne', 'es', 'ja', 'sv', 'et', 'tr', 'ru', 'cs', 'hu', 'it', 'sl', 'fr', 'el']
+    class_names = ['sl', 'fa', 'nl', 'uk', 'km', 'sr', 'da', 'ja', 'zh-CN', 'zh-TW', 'hu', 'ro', 'hr', 'pt', 'fr', 'ur', 'eu', 'fi', 'bn', 'ca', 'cs', 'lv', 'de', 'en', 'es', 'si', 'ru', 'tl', 'no', 'el', 'lt', 'ht', 'th', 'sv', 'ta', 'ar', 'hi-Latn', 'dv', 'cy', 'he', 'ne', 'vi', 'tr', 'ko', 'pl', 'sk', 'it', 'bs', 'id', 'hi', 'mr', 'hy', 'is', 'et', 'bg']
     class_count = len(class_names)
     characters = [l.strip() for l in open(CHARACTERS_PATH, 'r', encoding='utf-8')]
     characters_count = len(characters)

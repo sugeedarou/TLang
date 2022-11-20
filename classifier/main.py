@@ -9,7 +9,7 @@ from data_module import DataModule
 from classifier import Classifier
 from dataset import Dataset
 
-num_epochs = 16
+num_epochs = 3
 batch_size = 32
 lr = 1e-3
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
                          max_epochs=num_epochs,
                          precision=16,
                          num_sanity_val_steps=0,
-                        #  resume_from_checkpoint='lightning_logs/version_9/checkpoints/epoch=0-step=1375.ckpt',
+                        #  resume_from_checkpoint='lightning_logs/version_11\checkpoints\epoch=3-step=5500.ckpt',
                          callbacks=[ModelCheckpoint(monitor='val_loss'),
                                     EarlyStopping(monitor='val_loss', patience=3)])
     
