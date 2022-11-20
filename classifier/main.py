@@ -9,8 +9,8 @@ from data_module import DataModule
 from classifier import Classifier
 from dataset import Dataset
 
-num_epochs = 3
-batch_size = 32
+num_epochs = 16
+batch_size = 16
 lr = 1e-3
 
 dm = DataModule(batch_size)

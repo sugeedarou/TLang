@@ -10,6 +10,7 @@ from csv import DictReader
 from settings import *
 from models.gru import GRUModel
 from dataset import Dataset
+from cyclic_plateau_scheduler import CyclicPlateauScheduler
 
 
 class Classifier(pl.LightningModule):
@@ -20,6 +21,15 @@ class Classifier(pl.LightningModule):
         self.lr = lr
         self.num_classes = Dataset.class_count
         self.model = GRUModel(self.num_classes)
+        self.criterion = nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        self.lr_scheduler = CyclicPlateauScheduler(initial_lr=self.lr,
+                                                   min_improve_factor=0.97,
+                                                   lr_patience=0,
+                                                   lr_reduce_factor=0.5,
+                                                   lr_reduce_metric='val_loss',
+                                                   steps_per_epoch=len(Dataset(TRAIN_VAL_PATH)) / batch_size,
+                                                   optimizer=self.optimizer)
         # class_weights = self.calculate_class_weights()
         # class_weights = torch.tensor([9.1871e+02, 4.8353e+01, 4.5035e+00, 5.7419e+01, 3.0624e+02, 3.9944e+01,
         #                         1.1484e+02, 8.0822e-02, 4.8353e+01, 8.3519e+01, 6.1247e+01, 7.6559e+01,
@@ -32,8 +42,6 @@ class Classifier(pl.LightningModule):
         #                         2.9073e-01, 5.4042e+01, 2.2968e+02, 4.5935e+02, 9.1871e+02, 4.5935e+02,
         #                         2.2968e+02])
         # self.criterion = nn.CrossEntropyLoss(weight=class_weights,reduction='mean')
-        self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         self.confmat_metric = ConfusionMatrix(num_classes=self.num_classes)
         # self.f1_metric = F1(num_classes=self.num_classes)
 
@@ -45,10 +53,12 @@ class Classifier(pl.LightningModule):
         print(class_weights)
         return class_weights
 
-    def training_step(self, batch, _step_index):
+    def training_step(self, batch, step_index):
         self.model.train()
-        loss, accuracy = self.calculate_metrics(batch, mode='train')
+        loss = self.calculate_metrics(batch, mode='train')
+        self.lr_scheduler.training_step(step_index)
         self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=False)
+        self.log('lr', self.optimizer.param_groups[0]['lr'], on_step=True, on_epoch=False, prog_bar=True, logger=True)
         return loss
 
     def validation_step(self, batch, _step_index):
@@ -58,14 +68,15 @@ class Classifier(pl.LightningModule):
         self.log('val_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
         return {'val_loss': loss, 'val_accuracy': accuracy}
 
-    # def training_epoch_end(self, outputs):
-    #     loss = torch.mean(torch.tensor([o['loss'] for o in outputs]))
-    #     self.logger.experiment.add_scalars('losses', {'train_loss': loss}, global_step=self.current_epoch)
+    def training_epoch_end(self, outputs):
+        loss = torch.mean(torch.tensor([o['loss'] for o in outputs]))
+        self.logger.experiment.add_scalars('losses', {'train_loss': loss}, global_step=self.current_epoch)
 
-    # def validation_epoch_end(self, outputs):
-    #     avg_metrics = {key: torch.mean(torch.tensor([o[key] for o in outputs]))
-    #                    for key in outputs[0].keys()}
-    #     self.logger.experiment.add_scalars('losses', {'val_loss': avg_metrics['val_loss']}, global_step=self.current_epoch)
+    def validation_epoch_end(self, outputs):
+        avg_metrics = {key: torch.mean(torch.tensor([o[key] for o in outputs]))
+                       for key in outputs[0].keys()}
+        self.lr_scheduler.validation_epoch_end(avg_metrics)
+        self.logger.experiment.add_scalars('losses', {'val_loss': avg_metrics['val_loss']}, global_step=self.current_epoch)
 
     def test_step(self, batch, _):
         self.model.eval()
@@ -79,9 +90,13 @@ class Classifier(pl.LightningModule):
         labels_one_hot = Fun.one_hot(labels, num_classes=Dataset.class_count).float()
         loss = self.criterion(out, labels_one_hot)
         preds = out.argmax(1)
-        accuracy = FM.accuracy(preds, labels)
+
+        if mode == 'train':
+            return loss
         if mode == 'test':
             self.confmat_metric(preds, labels)
+        
+        accuracy = FM.accuracy(preds, labels)
         
         return loss, accuracy
 
