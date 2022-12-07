@@ -26,6 +26,7 @@ class DataModule(pl.LightningDataModule):
             train_val_count = len(ds)
             val_count = int((train_val_count * VAL_PERCENTAGE))
             train_count = train_val_count - val_count
+            # TODO: add seed
             return random_split(ds, [train_count, val_count])
 
         self.train_ds, self.val_ds = split_train_val(Dataset(TRAIN_VAL_PATH))

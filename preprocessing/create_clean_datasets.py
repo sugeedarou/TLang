@@ -5,7 +5,7 @@ import emoji
 def cleanup_text(text):
     text = text.replace('\r', '').replace('\n', '') # new lines to space
     text = re.sub(r'http\S+', '', text) # no urls
-    text = re.sub(r'@\S+', '', text) # no user refs
+    text = re.sub(r'@\S*', '', text) # no user refs
     text = re.sub(r'#\S+', '', text) # no hashtags
     text = emoji.replace_emoji(text, replace='') # no emojis
     text = re.sub('  ', ' ', text) # no double whitespaces
