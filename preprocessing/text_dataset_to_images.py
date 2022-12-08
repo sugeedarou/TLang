@@ -37,3 +37,4 @@ def text_ds_to_images(in_path, out_dir):
 text_ds_to_images(train_val_in, train_val_out)
 text_ds_to_images(test_in, test_out)
 print('done')
+

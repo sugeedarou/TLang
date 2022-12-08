@@ -18,7 +18,7 @@ def encode_dataset(in_path, out_path):
     writer.writeheader()
 
     for row in reader:
-        text = " ".join([str(indexOrLast(c)) for c in row['text']])
+        text = row['text'] #" ".join([str(indexOrLast(c)) for c in row['text']])
         lang = used_langs.index(row['lang'])
 
         writer.writerow({
