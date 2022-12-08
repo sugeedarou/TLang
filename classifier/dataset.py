@@ -7,7 +7,7 @@ from settings import *
 
 class Dataset(torch.utils.data.Dataset):
 
-    class_names = ['is', 'uk', 'fa', 'ka', 'ru', 'es', 'pa', 'nl', 'hy', 'tr', 'zh-CN', 'et', 'bs', 'it', 'vi', 'lo', 'mr', 'no', 'eu', 'my', 'ur', 'el', 'tl', 'kn', 'en', 'ko', 'lv', 'sr', 'sv', 'ml', 'fi', 'ps', 'th', 'pt', 'si', 'id', 'zh-TW', 'ht', 'bn', 'ta', 'gu', 'cs', 'lt', 'ca', 'sl', 'hi', 'ne', 'ar', 'hu', 'ro', 'dv', 'sd', 'de', 'ja', 'km', 'pl', 'hr', 'te', 'cy', 'ckb', 'he', 'fr', 'da', 'sk', 'bg', 'am', 'hi-Latn']
+    class_names = ['am', 'ar', 'bn', 'bs', 'ca', 'ckb', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hi-Latn', 'hr', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'ne', 'nl', 'no', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'sd', 'si', 'sr', 'sv', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'zh-CN', 'zh-TW']
     class_count = len(class_names)
     characters = [l.strip() for l in open(CHARACTERS_PATH, 'r', encoding='utf-8')]
     characters_count = len(characters)

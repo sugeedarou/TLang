@@ -2,7 +2,7 @@ from csv import DictReader
 
 chars = set()
 
-with open('../data/raw/train_val_no_enc.csv', 'r', encoding='utf-8', newline='') as f:
+with open('../data/raw/train_val_eliminated.csv', 'r', encoding='utf-8', newline='') as f:
      reader = DictReader(f, delimiter=',')
      
 #      i = 0
@@ -14,8 +14,14 @@ with open('../data/raw/train_val_no_enc.csv', 'r', encoding='utf-8', newline='')
         # if i > 10000:
         #     break
 
+chars = list(chars)
+chars.sort()
+print(chars)
+
 with open('../data/characters.csv', 'w', encoding="utf-8") as f:
-    for c in chars:
-        f.write(c + '\n')
+     for c in chars:
+          if c == '':
+               continue
+          f.write(c + '\n')
 
 print('done')
