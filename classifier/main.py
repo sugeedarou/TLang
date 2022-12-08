@@ -1,3 +1,4 @@
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
@@ -8,6 +9,13 @@ import matplotlib.pyplot as plt
 from data_module import DataModule
 from classifier import Classifier
 from dataset import Dataset
+
+# disable all debugging (activate only when training a model - and not testing code!)
+torch.autograd.set_detect_anomaly(False)
+torch.autograd.profiler.profile(False)
+torch.autograd.profiler.emit_nvtx(False)
+# enable cuDNN autotuner when model is trained for many epochs
+#torch.backends.cudnn.benchmark = True
 
 num_epochs = 16
 batch_size = 16
