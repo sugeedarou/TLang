@@ -21,7 +21,7 @@ class Classifier(pl.LightningModule):
         self.lr = lr
         self.num_classes = Dataset.class_count
         self.model = GRUModel(self.num_classes)
-        self.criterion = nn.CrossEntropyLoss()
+        # self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         self.lr_scheduler = CyclicPlateauScheduler(initial_lr=self.lr,
                                                    min_improve_factor=0.97,
@@ -31,17 +31,15 @@ class Classifier(pl.LightningModule):
                                                    steps_per_epoch=len(Dataset(TRAIN_VAL_PATH)) / batch_size,
                                                    optimizer=self.optimizer)
         # class_weights = self.calculate_class_weights()
-        # class_weights = torch.tensor([9.1871e+02, 4.8353e+01, 4.5035e+00, 5.7419e+01, 3.0624e+02, 3.9944e+01,
-        #                         1.1484e+02, 8.0822e-02, 4.8353e+01, 8.3519e+01, 6.1247e+01, 7.6559e+01,
-        #                         1.8374e+02, 3.4064e-01, 9.4712e-01, 8.3519e+01, 4.5935e+02, 4.3748e+01,
-        #                         1.3124e+02, 4.3748e+01, 2.2968e+02, 3.8280e+01, 4.8609e+00, 4.7589e-02,
-        #                         1.4436e-01, 9.1871e+02, 8.8850e-01, 3.1355e+00, 7.6559e+01, 1.9972e+01,
-        #                         9.1871e+02, 4.5935e+02, 1.8635e+00, 1.4355e+01, 7.6559e+01, 3.8553e-01,
-        #                         5.4042e+01, 9.1871e+02, 9.1871e+02, 2.4830e+01, 1.5312e+02, 4.8353e+01,
-        #                         1.3671e+00, 2.0236e+00, 9.2799e+00, 9.1871e+02, 2.4897e+00, 2.2968e+02,
-        #                         2.9073e-01, 5.4042e+01, 2.2968e+02, 4.5935e+02, 9.1871e+02, 4.5935e+02,
-        #                         2.2968e+02])
-        # self.criterion = nn.CrossEntropyLoss(weight=class_weights,reduction='mean')
+        class_weights = torch.tensor([ 2.0877,  0.4448,  1.8455,  9.5640,  6.7726,  2.7379,  8.2295, 10.8051,
+                                       2.1577,  1.8217,  0.0669,  0.1927,  3.3782,  8.5786,  0.9775,  1.9364,
+                                       1.8383,  2.1810,  2.8423,  7.8203,  8.5786,  2.0337,  0.3908,  1.7033,
+                                       0.1208,  1.6731,  1.8823,  1.7760,  2.1253,  2.2648,  4.8809,  1.9051,
+                                       2.6961,  1.7986,  2.4114,  2.3396,  8.0884,  1.9102,  3.2097,  1.8649,
+                                       0.4425,  7.6512,  0.7689,  2.5458,  1.7116,  2.9306,  3.0771,  2.0221,
+                                       1.8848,  1.3650,  3.2097,  1.4947,  6.6144,  2.1979,  3.2995,  3.0704,
+                                       2.6310])
+        self.criterion = nn.CrossEntropyLoss(weight=class_weights,reduction='mean')
         self.confmat_metric = ConfusionMatrix(num_classes=self.num_classes)
         # self.f1_metric = F1(num_classes=self.num_classes)
 
@@ -85,8 +83,8 @@ class Classifier(pl.LightningModule):
         self.log('test_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
 
     def calculate_metrics(self, batch, mode):
-        _, _, labels, texts = batch
-        out = self.model(texts.permute(1, 0, 2))
+        _, _, labels, img = batch
+        out = self.model(img)
         labels_one_hot = Fun.one_hot(labels, num_classes=Dataset.class_count).float()
         loss = self.criterion(out, labels_one_hot)
         preds = out.argmax(1)

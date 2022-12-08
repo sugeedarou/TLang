@@ -1,6 +1,9 @@
 import torch
 import csv
 import torch.nn.functional as Fun
+from PIL import Image
+from pathlib import Path
+from torchvision import transforms
 
 from settings import *
 
@@ -16,8 +19,9 @@ class Dataset(torch.utils.data.Dataset):
         super().__init__()
 
         def load_data(path):
+            self.path = Path(path)
             data = []
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(f'{path}.csv', 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
                 next(reader)
                 for row in reader:
@@ -33,9 +37,11 @@ class Dataset(torch.utils.data.Dataset):
         self.n_records = len(self.ds)
 
     def __getitem__(self, i):
-        id, lang, text = self.ds[i]
-        text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
-        return id, lang, text
+        id, lang, _ = self.ds[i]
+        # text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
+        i = Image.open(self.path / f'{id}.png')
+        img = transforms.ToTensor()(i).squeeze().transpose(0, 1)
+        return id, lang, img
 
     def __len__(self):
         return self.n_records
