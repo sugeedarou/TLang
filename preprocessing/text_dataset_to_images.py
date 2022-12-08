@@ -11,8 +11,8 @@ max_characters = 100
 font = ImageFont.truetype(f'{Path.home()}/AppData/Local/Microsoft/Windows/Fonts/GoNotoCurrent.ttf', fontsize)
 
 def save_text_to_image(text, save_path):
-    # W = int(font.getlength(text))
-    W = fontsize * max_characters
+    W = int(font.getlength(text))
+    # W = fontsize * max_characters
     H = int(fontsize*1.5)
     image = Image.new('1', (W, H), 255)
     draw = ImageDraw.Draw(image)

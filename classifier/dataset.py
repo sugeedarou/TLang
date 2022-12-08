@@ -4,7 +4,6 @@ import torch.nn.functional as Fun
 from PIL import Image
 from pathlib import Path
 from torchvision import transforms
-from PIL import Image, ImageDraw, ImageFont
 
 from settings import *
 
@@ -36,23 +35,11 @@ class Dataset(torch.utils.data.Dataset):
 
         self.ds = load_data(path)
         self.n_records = len(self.ds)
-    
-    fontsize = 16
-    imgWidth = fontsize * 100
-    imgHeight = int(fontsize*1.5)
-    font = ImageFont.truetype(f'{Path.home()}/AppData/Local/Microsoft/Windows/Fonts/GoNotoCurrent.ttf', fontsize)
 
     def __getitem__(self, i):
-        def text_to_image(text):
-            image = Image.new('1', (Dataset.imgWidth, Dataset.imgHeight), 255)
-            draw = ImageDraw.Draw(image)
-            draw.text((0, 0), text, fill='black', font=Dataset.font)
-            return image
-        
-        id, lang, text = self.ds[i]
+        id, lang, _ = self.ds[i]
         # text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
-        # i = Image.open(self.path / f'{id}.png')
-        i = text_to_image(text)
+        i = Image.open(self.path / f'{id}.png')
         img = transforms.ToTensor()(i).squeeze().transpose(0, 1)
         return id, lang, img
 
@@ -61,5 +48,5 @@ class Dataset(torch.utils.data.Dataset):
 
 
 # ds = Dataset(TRAIN_VAL_PATH)
-# id, lang, img = ds.__getitem__(1)
-# print(img)
+# id, lang, text = ds.__getitem__(1)
+# print(text)
