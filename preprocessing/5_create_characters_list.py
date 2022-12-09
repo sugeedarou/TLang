@@ -1,24 +1,17 @@
 from csv import DictReader
 
 chars = set()
-
-with open('../data/raw/train_val_eliminated.csv', 'r', encoding='utf-8', newline='') as f:
+with open('data/raw/train_val_eliminated.csv', 'r', encoding='utf-8', newline='') as f:
      reader = DictReader(f, delimiter=',')
      
-#      i = 0
      for row in reader:
         text = row['text']
         chars.update(text)
 
-        # i += 1
-        # if i > 10000:
-        #     break
-
 chars = list(chars)
 chars.sort()
-print(chars)
 
-with open('../data/characters.csv', 'w', encoding="utf-8") as f:
+with open('data/raw/characters_all.csv', 'w', encoding="utf-8") as f:
      for c in chars:
           if c == '':
                continue

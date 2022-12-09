@@ -27,9 +27,9 @@ class Dataset(torch.utils.data.Dataset):
                 for row in reader:
                     id, lang, text = row
                     lang = int(lang)
-                    # text = [int(c) for c in text.split(' ')]
+                    text = [int(c) for c in text.split(' ')]
                     text = text[:TWEET_MAX_CHARACTERS]
-                    # text = torch.tensor(text)
+                    text = torch.tensor(text)
                     data.append([id, lang, text])
             return data
 
@@ -37,11 +37,11 @@ class Dataset(torch.utils.data.Dataset):
         self.n_records = len(self.ds)
 
     def __getitem__(self, i):
-        id, lang, _ = self.ds[i]
-        # text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
-        i = Image.open(self.path / f'{id}.png')
-        img = transforms.ToTensor()(i).squeeze().transpose(0, 1)
-        return id, lang, img
+        id, lang, text = self.ds[i]
+        text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
+        # i = Image.open(self.path / f'{id}.png')
+        # img = transforms.ToTensor()(i).squeeze().transpose(0, 1)
+        return id, lang, text
 
     def __len__(self):
         return self.n_records
