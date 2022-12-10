@@ -6,9 +6,9 @@ def clean_char(c):
     if (u'\u2000'  <= c <= u'\u2BFF'  or  # different symbols
         u'\u1D100' <= c <= u'\u1D1FF' or  # musical symbols
         u'\u1D400' <= c <= u'\u1D7FF' or  # math alphanumeric symbols
-        c in '!"#$%&\'()*+,-./0123456789:;=?@[]\\^_´`}{§$°<>|'):
+        c in '!"#$%&\'()*+,~-./0123456789:;=?@[]\\^_´`}{§$°<>|'):
         return ''
-    return emoji.replace_emoji(c, replace='')
+    return c
 
 def clean_text(text):
     text = re.sub(r'http\S+', '', text) # no urls
@@ -25,6 +25,7 @@ def cleanup_characters():
     with open('data/raw/characters_all.csv', 'r', encoding='utf-8', newline='') as f_in:
         for line in f_in:
             c = line.replace('\n', '').replace('\r', '')
+            c = emoji.replace_emoji(c, replace='')
             c = clean_char(c)
             if c != '':
                 characters.add(c)

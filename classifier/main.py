@@ -15,7 +15,7 @@ torch.autograd.set_detect_anomaly(False)
 torch.autograd.profiler.profile(False)
 torch.autograd.profiler.emit_nvtx(False)
 # enable cuDNN autotuner when model is trained for many epochs
-#torch.backends.cudnn.benchmark = True
+torch.backends.cudnn.benchmark = True
 
 num_epochs = 16
 batch_size = 16
