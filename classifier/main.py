@@ -17,7 +17,7 @@ torch.autograd.profiler.emit_nvtx(False)
 # enable cuDNN autotuner when model is trained for many epochs
 torch.backends.cudnn.benchmark = True
 
-num_epochs = 16
+num_epochs = 100
 batch_size = 16
 lr = 1e-3
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
                          max_epochs=num_epochs,
                          precision=16,
                          num_sanity_val_steps=0,
-                        #  resume_from_checkpoint='lightning_logs/version_13\checkpoints\epoch=2-step=4266.ckpt',
+                         resume_from_checkpoint='lightning_logs/version_16/checkpoints/epoch=7-step=36312.ckpt',
                          callbacks=[ModelCheckpoint(monitor='val_loss'),
                                     EarlyStopping(monitor='val_loss', patience=3)])
     

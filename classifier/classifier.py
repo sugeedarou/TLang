@@ -9,6 +9,7 @@ from csv import DictReader
 
 from settings import *
 from models.gru import GRUModel
+from models.transformer import TransformerModel
 from dataset import Dataset
 from cyclic_plateau_scheduler import CyclicPlateauScheduler
 
@@ -21,6 +22,7 @@ class Classifier(pl.LightningModule):
         self.lr = lr
         self.num_classes = Dataset.class_count
         self.model = GRUModel(self.num_classes)
+        # self.model = TransformerModel(self.num_classes, self.device)
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         self.lr_scheduler = CyclicPlateauScheduler(initial_lr=self.lr,
@@ -31,14 +33,13 @@ class Classifier(pl.LightningModule):
                                                    steps_per_epoch=len(Dataset(TRAIN_VAL_PATH)) / batch_size,
                                                    optimizer=self.optimizer)
         # class_weights = self.calculate_class_weights()
-        class_weights = torch.tensor([ 2.0877,  0.4448,  1.8455,  9.5640,  6.7726,  2.7379,  8.2295, 10.8051,
-                                       2.1577,  1.8217,  0.0669,  0.1927,  3.3782,  8.5786,  0.9775,  1.9364,
-                                       1.8383,  2.1810,  2.8423,  7.8203,  8.5786,  2.0337,  0.3908,  1.7033,
-                                       0.1208,  1.6731,  1.8823,  1.7760,  2.1253,  2.2648,  4.8809,  1.9051,
-                                       2.6961,  1.7986,  2.4114,  2.3396,  8.0884,  1.9102,  3.2097,  1.8649,
-                                       0.4425,  7.6512,  0.7689,  2.5458,  1.7116,  2.9306,  3.0771,  2.0221,
-                                       1.8848,  1.3650,  3.2097,  1.4947,  6.6144,  2.1979,  3.2995,  3.0704,
-                                       2.6310])
+        class_weights = torch.tensor([ 2.1637,  0.4610,  1.9126,  7.0190,  2.8375,  8.5289, 11.1982,  2.2362,
+                                       1.8880,  0.0693,  0.1997,  3.5011,  8.8907,  1.0131,  2.0068,  1.9051,
+                                       2.2603,  2.9457,  8.8907,  2.1077,  0.4050,  1.7653,  0.1252,  1.7340,
+                                       1.9507,  1.8406,  2.2026,  2.3471,  5.0585,  1.9744,  2.7942,  1.8640,
+                                       2.4991,  2.4247,  8.3826,  1.9797,  3.3264,  1.9328,  0.4586,  7.9295,
+                                       0.7968,  1.8066,  2.6384,  1.7738,  3.1891,  2.0957,  1.9533,  1.4146,
+                                       3.3264,  1.5491,  6.8550,  2.2779,  3.4195,  3.1821,  2.7267])
         self.criterion = nn.CrossEntropyLoss(weight=class_weights)
         self.confmat_metric = ConfusionMatrix(num_classes=self.num_classes)
         # self.f1_metric = F1(num_classes=self.num_classes)

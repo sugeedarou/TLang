@@ -1,23 +1,22 @@
 import torch.nn as nn
 import math
-from typing import Tuple
 import torch
 from torch import nn, Tensor
-import torch.nn.functional as F
-from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 from settings import *
 from dataset import Dataset
 
 # based on https://pytorch.org/tutorials/beginner/transformer_tutorial.html
-class GRUModel(nn.Module):
-    def __init__(self, output_size):
+class TransformerModel(nn.Module):
+    def __init__(self, output_size, device):
         super().__init__()
+        self.device = device
         self.output_size = output_size
         self.model_type = 'Transformer'
-        self.pos_encoder = PositionalEncoding(d_model, dropout)
+        d_model = Dataset.characters_count+1
+        self.pos_encoder = PositionalEncoding(d_model, 0.1)
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=Dataset.characters_count+1,
+            d_model=d_model,
             nhead=8,
             batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=6)
@@ -30,9 +29,10 @@ class GRUModel(nn.Module):
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
     def forward(self, batch):
+        bptt = batch.size(1)
         src = self.encoder(batch) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
-        src_mask = generate_square_subsequent_mask(bptt).to(device)
+        src_mask = generate_square_subsequent_mask(bptt).to(self.device)
         output = self.transformer_encoder(src, src_mask)
         output = self.decoder(output)
         return output

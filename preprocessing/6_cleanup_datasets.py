@@ -3,11 +3,15 @@ import emoji
 import pandas as pd
 
 def clean_char(c):
-    if (u'\u2000'  <= c <= u'\u2BFF'  or  # different symbols
-        u'\u1D100' <= c <= u'\u1D1FF' or  # musical symbols
-        u'\u1D400' <= c <= u'\u1D7FF' or  # math alphanumeric symbols
-        c in '!"#$%&\'()*+,~-./0123456789:;=?@[]\\^_´`}{§$°<>|'):
-        return ''
+    # if (u'\u2000'  <= c <= u'\u2BFF'  or  # different symbols
+    #     u'\u1D100' <= c <= u'\u1D1FF' or  # musical symbols
+    #     u'\u1D400' <= c <= u'\u1D7FF' or  # math alphanumeric symbols
+    #     u'\u20A0' <= c <= u'\u20CF' or  # currency symbols
+    #     u'\u0021' <= c <= u'\u0040' or u'\u005B' <= c <= u'\u0060' or u'\u007B' <= c <= u'\u007E' or # punctuation, digits
+    #     u'\u00A1' <= c <= u'\u00BB' 
+    
+    #     # c in '!"#$%&\'()*+,~-./0123456789:;=?@[]\\^_´`}{§$°<>| '):
+    #     return ''
     return c
 
 def clean_text(text):
@@ -15,7 +19,7 @@ def clean_text(text):
     text = re.sub(r'@\S*', '', text) # no user refs
     text = re.sub(r'#\S+', '', text) # no hashtags
     text = emoji.replace_emoji(text, replace='') # no emojis
-    text = ''.join([clean_char(c) for c in text])
+    # text = ''.join([clean_char(c) for c in text])
     text = re.sub(' +', ' ', text) # no double whitespaces
     text = text.strip() # no trailing whitespaces
     return text
@@ -26,7 +30,7 @@ def cleanup_characters():
         for line in f_in:
             c = line.replace('\n', '').replace('\r', '')
             c = emoji.replace_emoji(c, replace='')
-            c = clean_char(c)
+            # c = clean_char(c)
             if c != '':
                 characters.add(c)
     characters = list(characters)

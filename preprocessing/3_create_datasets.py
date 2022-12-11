@@ -35,7 +35,7 @@ def get_allowed_langs():
     allowed_langs = shared_langs & langs_70
     return allowed_langs
 
-def create_clean_dataset(id_lang_path, in_path, out_path, allowed_langs):
+def create_clean_dataset(id_lang_path, in_path, out_path, allowed_langs, ids_to_remove=[]):
     id_to_lang = get_id_to_lang_dict(id_lang_path)
     with open(in_path, 'r', encoding='utf-8', newline='') as f_in:
         with open(out_path, 'w', encoding='utf-8', newline='') as f_out:
@@ -44,11 +44,16 @@ def create_clean_dataset(id_lang_path, in_path, out_path, allowed_langs):
             writer.writeheader()
             for row in reader:
                 id = row['id']
+                if id in ids_to_remove:
+                    continue
                 text = row['text'].replace('\r', '').replace('\n', '') 
                 lang = id_to_lang[id]
 
                 if not lang in allowed_langs or text == '':
                     continue
+
+                if lang in ['sr', 'hr', 'bs']: # merge serbian, croatian, bosnian
+                    lang = 'scb'
 
                 writer.writerow({
                     'id': id,
@@ -56,8 +61,8 @@ def create_clean_dataset(id_lang_path, in_path, out_path, allowed_langs):
                     'text': text
                 })
 
-
+ids_to_remove = [] #['488884732835270658', '490181110853541888']
 allowed_langs = get_allowed_langs()
-create_clean_dataset('data/raw/uniform_precision.tsv', 'data/raw/uniform_precision_data.csv', 'data/raw/train_val.csv', allowed_langs)
+create_clean_dataset('data/raw/uniform_precision.tsv', 'data/raw/uniform_precision_data.csv', 'data/raw/train_val.csv', allowed_langs, ids_to_remove)
 create_clean_dataset('data/raw/recall_oriented.tsv', 'data/raw/recall_data.csv', 'data/raw/test.csv', allowed_langs)
 print('done')

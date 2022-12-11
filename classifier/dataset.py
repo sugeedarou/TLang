@@ -10,7 +10,7 @@ from settings import *
 
 class Dataset(torch.utils.data.Dataset):
 
-    class_names = ['am', 'ar', 'bn', 'bs', 'ca', 'ckb', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hi-Latn', 'hr', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'ne', 'nl', 'no', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'sd', 'si', 'sr', 'sv', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'zh-CN', 'zh-TW']
+    class_names = ['am', 'ar', 'bn', 'ca', 'ckb', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hi-Latn', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'ne', 'nl', 'no', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'scb', 'sd', 'si', 'sv', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'zh-CN', 'zh-TW']
     class_count = len(class_names)
     characters = [l.strip() for l in open(CHARACTERS_PATH, 'r', encoding='utf-8')]
     characters_count = len(characters)
@@ -28,7 +28,7 @@ class Dataset(torch.utils.data.Dataset):
                     id, lang, text = row
                     lang = int(lang)
                     text = [int(c) for c in text.split(' ')]
-                    text = text[:TWEET_MAX_CHARACTERS]
+                    # text = text[:TWEET_MAX_CHARACTERS]
                     text = torch.tensor(text)
                     data.append([id, lang, text])
             return data
