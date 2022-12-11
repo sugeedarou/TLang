@@ -1,6 +1,6 @@
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, StochasticWeightAveraging
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 import pandas as pd
 import seaborn as sns
@@ -14,8 +14,6 @@ from dataset import Dataset
 torch.autograd.set_detect_anomaly(False)
 torch.autograd.profiler.profile(False)
 torch.autograd.profiler.emit_nvtx(False)
-# enable cuDNN autotuner when model is trained for many epochs
-torch.backends.cudnn.benchmark = True
 
 num_epochs = 100
 batch_size = 16
@@ -43,8 +41,9 @@ if __name__ == '__main__':
                          max_epochs=num_epochs,
                          precision=16,
                          num_sanity_val_steps=0,
-                         resume_from_checkpoint='lightning_logs/version_16/checkpoints/epoch=7-step=36312.ckpt',
-                         callbacks=[ModelCheckpoint(monitor='val_loss'),
+                        #  resume_from_checkpoint='lightning_logs/version_16/checkpoints/epoch=7-step=36312.ckpt',
+                         callbacks=[StochasticWeightAveraging(swa_lrs=1e-4),
+                                    ModelCheckpoint(monitor='val_loss'),
                                     EarlyStopping(monitor='val_loss', patience=3)])
     
     trainer.fit(model, dm)
