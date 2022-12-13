@@ -42,7 +42,7 @@ if __name__ == '__main__':
                          precision=16,
                          num_sanity_val_steps=0,
                         #  resume_from_checkpoint='lightning_logs/version_16/checkpoints/epoch=7-step=36312.ckpt',
-                         callbacks=[StochasticWeightAveraging(swa_lrs=1e-4),
+                         callbacks=[#StochasticWeightAveraging(swa_lrs=1e-4),
                                     ModelCheckpoint(monitor='val_loss'),
                                     EarlyStopping(monitor='val_loss', patience=3)])
     
