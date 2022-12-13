@@ -9,9 +9,9 @@ class GRUModel(nn.Module):
         super().__init__()
         self.output_size = output_size
         self.rnn = nn.GRU(input_size=Dataset.characters_count+1,
-                          hidden_size=256,
-                          num_layers=3,
-                          bidirectional=True, dropout=0.5,
+                          hidden_size=512,
+                          num_layers=4,
+                          bidirectional=True, dropout=0.8,
                           batch_first=True)
         self.dropout = nn.Dropout(0.2)
         self.fc = nn.Linear(self.rnn.hidden_size*2, self.output_size)

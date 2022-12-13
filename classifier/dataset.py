@@ -19,16 +19,15 @@ class Dataset(torch.utils.data.Dataset):
         super().__init__()
 
         def load_data(path):
-            self.path = Path(path)
             data = []
-            with open(f'{path}.csv', 'r', encoding='utf-8') as f:
+            with open(path, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
                 next(reader)
                 for row in reader:
                     id, lang, text = row
                     lang = int(lang)
                     text = [int(c) for c in text.split(' ')]
-                    # text = text[:TWEET_MAX_CHARACTERS]
+                    text = text[:TWEET_MAX_CHARACTERS]
                     text = torch.tensor(text)
                     data.append([id, lang, text])
             return data
@@ -39,8 +38,6 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, i):
         id, lang, text = self.ds[i]
         text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
-        # i = Image.open(self.path / f'{id}.png')
-        # img = transforms.ToTensor()(i).squeeze().transpose(0, 1)
         return id, lang, text
 
     def __len__(self):

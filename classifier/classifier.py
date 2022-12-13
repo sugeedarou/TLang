@@ -30,7 +30,7 @@ class Classifier(pl.LightningModule):
                                                    lr_patience=0,
                                                    lr_reduce_factor=0.5,
                                                    lr_reduce_metric='val_loss',
-                                                   steps_per_epoch=len(Dataset(TRAIN_VAL_PATH)) / batch_size,
+                                                   steps_per_epoch=len(Dataset(TRAIN_PATH)) / batch_size,
                                                    optimizer=self.optimizer)
         # class_weights = self.calculate_class_weights()
         class_weights = torch.tensor([2.2885, 0.4876, 2.0230, 7.4240, 3.0012, 9.0210, 2.3653, 1.9969, 0.0733,
@@ -44,7 +44,7 @@ class Classifier(pl.LightningModule):
         # self.f1_metric = F1(num_classes=self.num_classes)
 
     def calculate_class_weights(self):
-        train_val_ds = Dataset(TRAIN_VAL_PATH)
+        train_val_ds = Dataset(TRAIN_PATH)
         labels = [item[1] for item in train_val_ds]
         class_weights=class_weight.compute_class_weight(class_weight='balanced',classes=range(Dataset.class_count),y=labels)
         class_weights=torch.tensor(class_weights,dtype=torch.float)

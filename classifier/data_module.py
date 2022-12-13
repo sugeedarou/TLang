@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import random_split
 import pytorch_lightning as pl
 
 from dataset import Dataset
@@ -16,7 +15,6 @@ def collate_fn(batch):
     return ids, text_lengths, labels, texts
 
 class DataModule(pl.LightningDataModule):
-
     def __init__(self, batch_size):
         super().__init__()
         self.batch_size = batch_size
@@ -26,14 +24,8 @@ class DataModule(pl.LightningDataModule):
                             'pin_memory': True}
 
     def setup(self, stage):
-        def split_train_val(ds):
-            train_val_count = len(ds)
-            val_count = int((train_val_count * VAL_PERCENTAGE))
-            train_count = train_val_count - val_count
-            # TODO: add seed
-            return random_split(ds, [train_count, val_count])
-
-        self.train_ds, self.val_ds = split_train_val(Dataset(TRAIN_VAL_PATH))
+        self.train_ds = Dataset(TRAIN_PATH)
+        self.val_ds = Dataset(VAL_PATH)
         self.test_ds  = Dataset(TEST_PATH)
 
     def train_dataloader(self):
