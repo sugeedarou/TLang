@@ -24,7 +24,7 @@ class Classifier(pl.LightningModule):
         self.model = GRUModel(self.num_classes)
         # self.model = TransformerModel(self.num_classes, self.device)
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=1e-1)
         self.lr_scheduler = CyclicPlateauScheduler(initial_lr=self.lr,
                                                    min_improve_factor=0.97,
                                                    lr_patience=0,

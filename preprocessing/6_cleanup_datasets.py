@@ -19,6 +19,7 @@ def clean_text(text):
     text = re.sub(r'@\S*', '', text) # no user refs
     text = re.sub(r'#\S+', '', text) # no hashtags
     text = emoji.replace_emoji(text, replace='') # no emojis
+    text = re.sub(r'(.)\1{3,}', r'\1\1', text) # replace repetitive characters
     # text = ''.join([clean_char(c) for c in text])
     text = re.sub(' +', ' ', text) # no double whitespaces
     text = text.strip() # no trailing whitespaces
