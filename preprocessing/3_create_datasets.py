@@ -1,4 +1,5 @@
 from csv import DictReader, DictWriter
+import html
 
 def get_id_to_lang_dict(path):
     id_to_lang = {}
@@ -47,6 +48,8 @@ def create_clean_dataset(id_lang_path, in_path, out_path, allowed_langs, ids_to_
                 if id in ids_to_remove:
                     continue
                 text = row['text'].replace('\r', '').replace('\n', '') 
+                for _ in range(3): # unescape multiple times to remove all entities
+                    text = html.unescape(text)
                 lang = id_to_lang[id]
 
                 if not lang in allowed_langs or text == '':
