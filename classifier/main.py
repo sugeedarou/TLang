@@ -1,52 +1,21 @@
-import torch
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, StochasticWeightAveraging
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+from models.gru import GRUModel
+from trainer import Trainer
+from twitter_dataset import TwitterDataset
+from utils import disable_debugging
+from settings import *
 
-from data_module import DataModule
-from classifier import Classifier
-from dataset import Dataset
-
-# disable all debugging (activate only when training a model - and not testing code!)
-torch.autograd.set_detect_anomaly(False)
-torch.autograd.profiler.profile(False)
-torch.autograd.profiler.emit_nvtx(False)
-
-num_epochs = 100
-batch_size = 16
-lr = 1e-3
-
-dm = DataModule(batch_size)
-
-def show_confusion_matrix(confmat):
-    plt.figure(figsize=(15,15))
-    class_names = Dataset.class_names
-    df_cm = pd.DataFrame(confmat, index=class_names, columns=class_names).astype(int)
-    cmap = sns.cubehelix_palette(light=1, as_cmap=True)
-    heatmap = sns.heatmap(df_cm, annot=True, cbar=False, fmt="d", cmap=cmap)
-    heatmap.yaxis.set_ticklabels(heatmap.yaxis.get_ticklabels(), rotation=0, ha='right',fontsize=15)
-    heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=45, ha='right',fontsize=15)
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.show()
+disable_debugging()
 
 if __name__ == '__main__':
-    model = Classifier(batch_size, lr)
+    model = GRUModel()
+    ds = TwitterDataset()
+    trainer = Trainer(model=model,
+                      train_ds=TwitterDataset(TRAIN_PATH),
+                      val_ds=TwitterDataset(VAL_PATH),
+                      test_ds=TwitterDataset(TEST_PATH),
+                      max_epochs=100,
+                      batch_size=16,
+                      lr=1e-3)
 
-    trainer = pl.Trainer(accelerator='gpu',
-                         devices=1,
-                         max_epochs=num_epochs,
-                         precision=16,
-                         num_sanity_val_steps=0,
-                        #  resume_from_checkpoint='lightning_logs/version_16/checkpoints/epoch=7-step=36312.ckpt',
-                         callbacks=[#StochasticWeightAveraging(swa_lrs=1e-4),
-                                    ModelCheckpoint(monitor='val_loss'),
-                                    EarlyStopping(monitor='val_loss', patience=3)])
-    
-    trainer.fit(model, dm)
-    trainer.test(datamodule=dm)
-    confmat = model.confmat_metric.compute()
-    show_confusion_matrix(confmat)
+    trainer.train()
+    trainer.test()

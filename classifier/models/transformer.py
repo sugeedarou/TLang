@@ -4,7 +4,7 @@ import torch
 from torch import nn, Tensor
 
 from settings import *
-from dataset import Dataset
+from classifier.twitter_dataset import TwitterDataset
 
 # based on https://pytorch.org/tutorials/beginner/transformer_tutorial.html
 class TransformerModel(nn.Module):
@@ -13,7 +13,7 @@ class TransformerModel(nn.Module):
         self.device = device
         self.output_size = output_size
         self.model_type = 'Transformer'
-        d_model = Dataset.characters_count+1
+        d_model = TwitterDataset.characters_count+1
         self.pos_encoder = PositionalEncoding(d_model, 0.1)
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model,

@@ -1,14 +1,11 @@
 import torch
 import csv
 import torch.nn.functional as Fun
-from PIL import Image
-from pathlib import Path
-from torchvision import transforms
 
 from settings import *
 
 
-class Dataset(torch.utils.data.Dataset):
+class TwitterDataset(torch.utils.data.Dataset):
 
     class_names = ['am', 'ar', 'bn', 'ca', 'ckb', 'cs', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hl', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'nds', 'ne', 'nl', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'scb', 'sd', 'si', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW']
     class_count = len(class_names)
@@ -37,13 +34,8 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         id, lang, text = self.ds[i]
-        text = Fun.one_hot(text, num_classes=Dataset.characters_count + 1).float()
+        text = Fun.one_hot(text, num_classes=TwitterDataset.characters_count + 1).float()
         return id, lang, text
 
     def __len__(self):
         return self.n_records
-
-
-# ds = Dataset(TRAIN_VAL_PATH)
-# id, lang, text = ds.__getitem__(1)
-# print(text)
