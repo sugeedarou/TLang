@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from classifier.twitter_dataset import TwitterDataset
+from twitter_dataset import TwitterDataset
 
 
 def show_confusion_matrix(confmat):

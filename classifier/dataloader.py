@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import DataLoader
+import torch.utils.data as td
 from torch.nn.utils.rnn import pad_sequence
 import torch.nn.functional as F
 from sklearn.utils import class_weight
@@ -20,21 +20,21 @@ class DataLoader():
                             'num_workers': 12,
                             'pin_memory': True}
 
-        self.train_ds = self.dataset(TRAIN_PATH)
-        self.val_ds = self.dataset(VAL_PATH)
-        self.test_ds = self.dataset(TEST_PATH)
+        self.train_ds = self.dataset(TRAIN_PATH, tweet_max_characters)
+        self.val_ds = self.dataset(VAL_PATH, tweet_max_characters)
+        self.test_ds = self.dataset(TEST_PATH, tweet_max_characters)
 
     def train_dataloader(self):
-        return DataLoader(dataset=self.train_ds,
+        return td.DataLoader(dataset=self.train_ds,
                           shuffle=True,
                           **self.loader_args)
 
     def val_dataloader(self):
-        return DataLoader(dataset=self.val_ds,
+        return td.DataLoader(dataset=self.val_ds,
                           **self.loader_args)
 
     def test_dataloader(self):
-        return DataLoader(dataset=self.test_ds,
+        return td.DataLoader(dataset=self.test_ds,
                           **self.loader_args)
 
     def calculate_class_weights(self):

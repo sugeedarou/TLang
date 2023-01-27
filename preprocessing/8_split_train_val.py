@@ -29,5 +29,5 @@ def split_train_val(val_percentage, path_in, path_train, path_val):
 
 
 VAL_PERCENTAGE = 0.1
-split_train_val(VAL_PERCENTAGE, 'data/raw/train_val_encoded.csv', 'data/train.csv', 'data/val.csv')
+split_train_val(VAL_PERCENTAGE, 'data/raw/train_val_reduced.csv', 'data/raw/train_reduced.csv', 'data/raw/val_reduced.csv')
 print('done')

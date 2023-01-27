@@ -2,25 +2,25 @@ import torch
 import torch.nn.functional as Fun
 import torchmetrics.functional as FM
 from torchmetrics import ConfusionMatrix
+import tqdm
 
 from settings import *
 from visualizations import show_confusion_matrix
 
 
-def Trainer():
+class Trainer():
 
     def __init__(self, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, do_checkpoints=True, early_stopping_patience=3, disable_debugging=True):
         # init variables
         self.task = 'multiclass'
         self.device = self.get_processing_device()
+        self.dataloader = dataloader
         self.num_classes = self.dataloader.dataset.num_classes
         self.confmat_metric = ConfusionMatrix(task=self.task, num_classes=self.num_classes)
         if disable_debugging:
             self.disable_debugging()
-        # required parameters
-        self.model = model(self.dataset.num_classes)
+        self.model = model
         self.model.to(self.device)
-        self.dataloader = dataloader
         self.criterion = criterion
         self.optimizer = optimizer
         # self.f1_metric = F1(num_classes=self.dataset.num_classes)
@@ -33,13 +33,27 @@ def Trainer():
         self.early_stopping_patience = early_stopping_patience
 
     def train(self):
-        pass
+        for epoch in range(self.max_epochs):
+            for i, batch in enumerate(self.dataloader.train_dataloader()):
+                loss = self.training_step(batch, i)
+                self.model.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            with torch.no_grad():
+                for i, batch in enumerate(self.dataloader.val_dataloader()):
+                    self.validation_step(batch, i)
 
     def test(self):
-        confmat = self.confmat_metric.compute()
-        show_confusion_matrix(self.confmat_metric)
+        with torch.no_grad():
+            for i, batch in enumerate(self.dataloader.test_dataloader()):
+                loss = self.test_step(batch)
+                self.model.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            confmat = self.confmat_metric.compute()
+            show_confusion_matrix(self.confmat_metric)
 
-    def log(metric, val, on_step, on_epoch, prog_bar, logger):
+    def log(self, metric, val, on_step=False, on_epoch=True, prog_bar=False, logger=False):
         pass
 
     def training_step(self, batch, step_index):
@@ -89,12 +103,12 @@ def Trainer():
         
         return loss, accuracy
 
-    def disable_debugging():
+    def disable_debugging(self):
         torch.autograd.set_detect_anomaly(False)
         torch.autograd.profiler.profile(False)
         torch.autograd.profiler.emit_nvtx(False)
 
-    def get_processing_device():
+    def get_processing_device(self):
         device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
         print(f"Using {device} device")
         return device

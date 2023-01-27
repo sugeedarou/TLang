@@ -5,11 +5,8 @@ from cyclic_plateau_scheduler import CyclicPlateauScheduler
 from models.gru import GRUModel
 from trainer import Trainer
 from twitter_dataset import TwitterDataset
-from utils import disable_debugging
 from dataloader import DataLoader
 from settings import *
-
-disable_debugging()
 
 batch_size = 16
 lr = 1e-3
@@ -22,16 +19,17 @@ class_weights = torch.tensor([2.2885, 0.4876, 2.0230, 7.4240, 3.0012, 9.0210, 2.
                               1.4963, 3.5184, 1.6385, 7.2505, 3.6168, 3.3658, 2.8840]) # recalculate with dataloader.calculate_class_weights
 
 if __name__ == '__main__':
-    model = GRUModel()
+    model = GRUModel(TwitterDataset.num_classes)
     dataloader = DataLoader(dataset=TwitterDataset, batch_size=batch_size, tweet_max_characters=280)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-1)
     trainer = Trainer(model=model,
                       dataloader=dataloader,
-                      criterion=nn.CrossEntropyLoss(class_weights=class_weights),
-                      optimizer=torch.optim.AdamW(
-                          model.parameters(), lr=lr, weight_decay=1e-1),
+                      criterion=nn.CrossEntropyLoss(weight=class_weights),
+                      optimizer=optimizer,
                       batch_size=batch_size,
                       lr=lr,
-                      lr_scheduler=CyclicPlateauScheduler(initial_lr=lr,
+                      lr_scheduler=CyclicPlateauScheduler(optimizer=optimizer,
+                                                          initial_lr=lr,
                                                           min_improve_factor=0.97,
                                                           lr_patience=0,
                                                           lr_reduce_factor=0.5,

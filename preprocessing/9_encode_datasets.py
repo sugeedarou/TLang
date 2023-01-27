@@ -31,6 +31,7 @@ def encode_dataset(in_path, out_path):
     f_out.close()
 
 
-encode_dataset('data/raw/train_val_reduced.csv', 'data/raw/train_val_encoded.csv')
+encode_dataset('data/raw/train_reduced.csv', 'data/train.csv')
+encode_dataset('data/raw/val_reduced.csv', 'data/val.csv')
 encode_dataset('data/raw/test_reduced.csv', 'data/test.csv')
 print('done')
