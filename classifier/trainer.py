@@ -33,29 +33,53 @@ class Trainer():
         self.early_stopping_patience = early_stopping_patience
 
     def train(self):
-        for epoch in range(self.max_epochs):
-            with tqdm(self.dataloader.train_dataloader(), unit='batch') as tepoch: 
-                for i, batch in enumerate(tepoch):
-                    tepoch.set_description(f"Epoch {epoch} / {self.max_epochs}")
-                    train_loss = self.training_step(batch, i)
-                    self.model.zero_grad()
-                    train_loss.backward()
-                    self.optimizer.step()
-                    tepoch.set_postfix(train_loss=train_loss.item())
-                    with torch.no_grad():
-                        with tqdm(self.dataloader.train_dataloader(), unit='batch') as tepoch_val: 
-                            for i, batch in enumerate(tepoch_val):
-                                val_loss = self.validation_step(batch, i)
+        train_loader = self.dataloader.train_dataloader()
+        val_loader = self.dataloader.val_dataloader()
 
+        for epoch in range(1, self.max_epochs+1):
+            with tqdm(train_loader) as tepoch: 
+                # train
+                tepoch.set_description(f'Epoch {epoch} / {self.max_epochs}')
+                if epoch > 0:
+                    tepoch.set_postfix(train_loss=train_loss, val_loss=val_loss, val_accuracy=val_accuracy)
+                train_losses = torch.zeros(len(tepoch))
+                for i, batch in enumerate(tepoch):
+                    loss = self.training_step(batch, i)
+                    self.model.zero_grad()
+                    loss.backward()
+                    train_losses[i] = loss
+                    self.optimizer.step()
+                train_loss = torch.mean(train_losses).item()
+                # validate
+                if epoch == self.max_epochs:
+                    continue
+                with torch.no_grad(), tqdm(val_loader) as tepoch_val: 
+                    tepoch_val.set_description('Validating')
+                    val_losses = torch.zeros(len(tepoch_val))
+                    val_accuracies = torch.zeros(len(tepoch_val))
+                    for i, batch in enumerate(tepoch_val):
+                        loss, accuracy = self.validation_step(batch, i)
+                        val_losses[i] = loss
+                        val_accuracies[i] = accuracy
+                val_loss = torch.mean(val_losses).item()
+                val_accuracy = torch.mean(val_accuracies).item()
+                
     def test(self):
-        with torch.no_grad():
-            for i, batch in enumerate(self.dataloader.test_dataloader()):
-                loss = self.test_step(batch)
-                self.model.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+        test_loader = self.dataloader.test_dataloader()
+        with torch.no_grad(), tqdm(test_loader) as tepoch: 
+            tepoch.set_description('Testing')
+            test_losses = torch.zeros(len(tepoch))
+            test_accuracies = torch.zeros(len(tepoch))
+            for i, batch in enumerate(tepoch):
+                loss, accuracy = self.validation_step(batch, i)
+                test_losses[i] = loss
+                test_accuracies[i] = accuracy
+            test_loss = torch.mean(test_losses).item()
+            test_accuracy = torch.mean(test_accuracies).item()
+            tepoch.set_postfix(train_loss=test_loss, test_accuracy=test_accuracy)
+            tepoch.refresh()
             confmat = self.confmat_metric.compute()
-            show_confusion_matrix(self.confmat_metric)
+            show_confusion_matrix(confmat)
 
     def log(self, metric, val, on_step=False, on_epoch=True, prog_bar=False, logger=False):
         pass
@@ -73,7 +97,7 @@ class Trainer():
         loss, accuracy = self.calculate_metrics(batch, mode='val')
         self.log('val_loss', loss, on_epoch=True, prog_bar=True, logger=False)
         self.log('val_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
-        return {'val_loss': loss, 'val_accuracy': accuracy}
+        return loss, accuracy
 
     def training_epoch_end(self, outputs):
         loss = torch.mean(torch.tensor([o['loss'] for o in outputs]))
@@ -90,6 +114,7 @@ class Trainer():
         loss, accuracy = self.calculate_metrics(batch, mode='test')
         self.log('test_loss', loss, on_epoch=True, prog_bar=True, logger=True)
         self.log('test_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
+        return loss, accuracy
 
     def calculate_metrics(self, batch, mode):
         _, _, labels, texts = batch

@@ -9,8 +9,8 @@ class GRUModel(nn.Module):
         super().__init__()
         self.output_size = output_size
         self.rnn = nn.GRU(input_size=TwitterDataset.num_characters+1,
-                          hidden_size=128,
-                          num_layers=3,
+                          hidden_size=32,
+                          num_layers=1,
                           bidirectional=True, dropout=0.5,
                           batch_first=True)
         self.dropout = nn.Dropout(0.2)
