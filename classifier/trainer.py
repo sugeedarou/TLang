@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as Fun
 import torchmetrics.functional as FM
 from torchmetrics import ConfusionMatrix
-import tqdm
+from tqdm import tqdm
 
 from settings import *
 from visualizations import show_confusion_matrix
@@ -10,10 +10,10 @@ from visualizations import show_confusion_matrix
 
 class Trainer():
 
-    def __init__(self, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, do_checkpoints=True, early_stopping_patience=3, disable_debugging=True):
+    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, do_checkpoints=True, early_stopping_patience=3, disable_debugging=True):
         # init variables
         self.task = 'multiclass'
-        self.device = self.get_processing_device()
+        self.device = device
         self.dataloader = dataloader
         self.num_classes = self.dataloader.dataset.num_classes
         self.confmat_metric = ConfusionMatrix(task=self.task, num_classes=self.num_classes)
@@ -34,14 +34,18 @@ class Trainer():
 
     def train(self):
         for epoch in range(self.max_epochs):
-            for i, batch in enumerate(self.dataloader.train_dataloader()):
-                loss = self.training_step(batch, i)
-                self.model.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-            with torch.no_grad():
-                for i, batch in enumerate(self.dataloader.val_dataloader()):
-                    self.validation_step(batch, i)
+            with tqdm(self.dataloader.train_dataloader(), unit='batch') as tepoch: 
+                for i, batch in enumerate(tepoch):
+                    tepoch.set_description(f"Epoch {epoch} / {self.max_epochs}")
+                    train_loss = self.training_step(batch, i)
+                    self.model.zero_grad()
+                    train_loss.backward()
+                    self.optimizer.step()
+                    tepoch.set_postfix(train_loss=train_loss.item())
+                    with torch.no_grad():
+                        with tqdm(self.dataloader.train_dataloader(), unit='batch') as tepoch_val: 
+                            for i, batch in enumerate(tepoch_val):
+                                val_loss = self.validation_step(batch, i)
 
     def test(self):
         with torch.no_grad():
@@ -88,9 +92,11 @@ class Trainer():
         self.log('test_accuracy', accuracy, on_epoch=True, prog_bar=True, logger=True)
 
     def calculate_metrics(self, batch, mode):
-        _, _, labels, img = batch
-        out = self.model(img)
-        labels_one_hot = Fun.one_hot(labels, num_classes=self.num_classes).float()
+        _, _, labels, texts = batch
+        texts = texts.to(self.device)
+        labels = labels.to(self.device)
+        out = self.model(texts)
+        labels_one_hot = Fun.one_hot(labels, num_classes=self.num_classes).float().to(self.device)
         loss = self.criterion(out, labels_one_hot)
         preds = out.argmax(1)
 
@@ -108,7 +114,7 @@ class Trainer():
         torch.autograd.profiler.profile(False)
         torch.autograd.profiler.emit_nvtx(False)
 
-    def get_processing_device(self):
+    def get_gpu_device_if_available():
         device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
         print(f"Using {device} device")
         return device
