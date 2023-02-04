@@ -1,8 +1,7 @@
 import torch
 import torch.nn.functional as Fun
-import torchmetrics
+from torch.utils.tensorboard import SummaryWriter
 from torchmetrics import MetricCollection, Accuracy, Precision, Recall, F1Score
-import torchmetrics.functional as FM
 from torchmetrics import ConfusionMatrix
 from tqdm import tqdm
 from math import floor
@@ -30,12 +29,13 @@ class Trainer():
         metric_args = {'task':self.task, 'num_classes':self.num_classes, 'average':'macro'}
         self.val_metrics = MetricCollection({
             'acc': Accuracy(**metric_args).to(device),
+            'f1': F1Score(**metric_args).to(device),
         })
         self.test_metrics = MetricCollection({
+            'acc': Accuracy(**metric_args).to(device),
+            'f1': F1Score(**metric_args).to(device),
             'prec': Precision(**metric_args).to(device),
             'rec': Recall(**metric_args).to(device),
-            'f1': F1Score(**metric_args).to(device),
-            'acc': Accuracy(**metric_args).to(device),
         })
         self.confmat_metric = ConfusionMatrix(task=self.task, num_classes=self.num_classes).to(device)
         # self.f1_metric = F1(num_classes=self.dataset.num_classes)
@@ -46,12 +46,23 @@ class Trainer():
         self.lr_scheduler = lr_scheduler
         self.do_checkpoints = do_checkpoints
         self.early_stopping_patience = early_stopping_patience
+        self.tb_writer = SummaryWriter()
+        self.tb_writer.add_custom_scalars({
+            "metrics": {
+                "loss": ["Multiline", ["loss/train", "loss/val"]],
+                "accuracy": ["Multiline", ["accuracy/val", "accuracy/test"]],
+                "f1": ["Multiline", ["f1/val", "f1/test"]],
+                "prec": ["Multiline", ["prec/test"]],
+                "rec": ["Multiline", ["rec/test"]],
+            },
+        })
 
     def train(self):
         train_loader = self.dataloader.train_dataloader()
         val_loader = self.dataloader.val_dataloader()
 
         for epoch in range(1, self.max_epochs+1):
+            self.epoch = epoch
             with tqdm(train_loader) as train_tepoch: 
                 # train
                 train_tepoch.set_description(f'Epoch {epoch} / {self.max_epochs}')
@@ -76,6 +87,7 @@ class Trainer():
             losses[i] = loss
             self.optimizer.step()
         loss = torch.mean(losses).item()
+        self.tb_writer.add_scalar('loss/train', loss, self.epoch)
         return loss
 
     def training_step(self, batch, step_index):
@@ -95,6 +107,9 @@ class Trainer():
             self.lr_scheduler.validation_epoch_end({'val_loss': loss})
             metrics = self.val_metrics.compute()
             self.val_metrics.reset()
+            self.tb_writer.add_scalar('loss/val', loss, self.epoch)
+            self.tb_writer.add_scalar('accuracy/val', metrics['acc'], self.epoch)
+            self.tb_writer.add_scalar('f1/val', metrics['f1'], self.epoch)
             return loss, metrics
 
     def validation_step(self, batch, _step_index):
@@ -124,6 +139,10 @@ class Trainer():
             loss = torch.mean(losses).item()
             metrics = self.test_metrics.compute()
             self.test_metrics.reset()
+            print(metrics)
+            self.tb_writer.add_scalar('loss/test', loss, self.epoch)
+            self.tb_writer.add_scalar('accuracy/test', metrics['acc'], self.epoch)
+            self.tb_writer.add_scalar('f1/test', metrics['f1'], self.epoch)
             return loss, metrics
 
     def test_step(self, batch, _):

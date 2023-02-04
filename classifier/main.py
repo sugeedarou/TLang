@@ -37,7 +37,7 @@ if __name__ == '__main__':
                                                           lr_patience=0,
                                                           lr_reduce_factor=0.5,
                                                           steps_per_epoch=len(dataloader.train_ds) / batch_size),
-                      max_epochs=1)
+                      max_epochs=5)
 
     trainer.train()
     trainer.test()
