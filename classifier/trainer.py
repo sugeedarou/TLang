@@ -12,7 +12,7 @@ from visualizations import show_confusion_matrix
 
 class Trainer():
 
-    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, do_checkpoints=True, early_stopping_patience=3, disable_debugging=True):
+    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, disable_debugging=True, callbacks=[]):
         # init variables
         self.task = 'multiclass'
         self.device = device
@@ -44,8 +44,7 @@ class Trainer():
         self.batch_size = batch_size
         self.lr = lr
         self.lr_scheduler = lr_scheduler
-        self.do_checkpoints = do_checkpoints
-        self.early_stopping_patience = early_stopping_patience
+        self.callbacks = callbacks
         self.tb_writer = SummaryWriter()
         self.tb_writer.add_custom_scalars({
             "metrics": {
@@ -72,11 +71,17 @@ class Trainer():
                     train_tepoch.set_postfix_str(f'{log_str_train}, {log_str_val}')
                 train_loss = self.training_epoch(train_tepoch)
                 # validate
-                if epoch == self.max_epochs:
-                    continue
                 with tqdm(val_loader) as val_tepoch: 
                     val_tepoch.set_description('Validating')
                     val_loss, val_metrics = self.validation_epoch(val_tepoch)
+                # callbacks
+                val_metrics['loss'] = val_loss
+                stop_training = False
+                for callback in self.callbacks:
+                    if (callback(val_metrics))
+                        stop_training = True
+                if stop_training:
+                    return
 
     def training_epoch(self, data):
         losses = torch.zeros(len(data))
