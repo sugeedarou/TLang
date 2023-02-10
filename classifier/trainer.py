@@ -5,6 +5,7 @@ from torchmetrics import MetricCollection, Accuracy, Precision, Recall, F1Score
 from torchmetrics import ConfusionMatrix
 from tqdm import tqdm
 from math import floor
+from pathlib import Path
 
 from settings import *
 from visualizations import show_confusion_matrix
@@ -55,6 +56,9 @@ class Trainer():
                 "rec": ["Multiline", ["rec/test"]],
             },
         })
+        self.log_dir = Path('runs')
+        self.log_dir.mkdir(exist_ok=True)
+        self.log_version = self.get_log_version()
 
     def train(self):
         train_loader = self.dataloader.train_dataloader()
@@ -78,7 +82,7 @@ class Trainer():
                 val_metrics['loss'] = val_loss
                 stop_training = False
                 for callback in self.callbacks:
-                    if (callback(val_metrics))
+                    if (callback(val_metrics, self.save_model)):
                         stop_training = True
                 if stop_training:
                     return
@@ -170,6 +174,17 @@ class Trainer():
         torch.autograd.set_detect_anomaly(False)
         torch.autograd.profiler.profile(False)
         torch.autograd.profiler.emit_nvtx(False)
+
+    def save_model(self):
+        save_dir = Path()
+        torch.save({'epoch': EPOCH,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': LOSS}, 
+	    'save/to/path/model.pth')
+
+    def get_log_version(self):
+        return sum([p.is_file() for p in self.log_dir.iterdir()])
 
     def get_gpu_device_if_available():
         device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
