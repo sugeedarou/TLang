@@ -20,7 +20,7 @@ def create_dataset(id_lang_path, in_path, out_path):
             writer.writeheader()
             for row in reader:
                 id = row['id']
-                text = row['text'].replace('\r', '').replace('\n', '') 
+                text = row['text'].replace('\r', '').replace('\n', '')
                 for _ in range(3): # unescape multiple times to fix all entities
                     text = html.unescape(text)
                 lang = id_to_lang[id]

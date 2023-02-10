@@ -60,9 +60,9 @@ def write_output_file(f_in, f_out, newlangs):
 MIN_SAMPLES_COUNT = 100
 
 train_val_in = open('data/input/train_val.tsv', 'r', encoding='utf-8', newline='')
-train_val_out = open('data/processed/train_val_el.tsv', 'w', encoding='utf-8', newline='')
+train_val_out = open('data/processed/train_val.tsv', 'w', encoding='utf-8', newline='')
 test_in = open('data/input/test.tsv', 'r', encoding='utf-8', newline='')
-test_out = open('data/processed/test_el.tsv', 'w', encoding='utf-8', newline='')
+test_out = open('data/processed/test.tsv', 'w', encoding='utf-8', newline='')
 
 print('counting samples')
 samples_per_language = count_samples_per_language(train_val_in)

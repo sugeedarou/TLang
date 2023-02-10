@@ -1,8 +1,8 @@
 from csv import DictReader, DictWriter
 
-characters = [l.replace('\n', '') for l in open('data/characters.csv', 'r', encoding='utf-8')]
+characters = [l.replace('\n', '') for l in open('data/processed/characters.tsv', 'r', encoding='utf-8')]
 characters_count = len(characters)
-used_langs = ['am', 'ar', 'bn', 'ca', 'ckb', 'cs', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hl', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'nds', 'ne', 'nl', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'scb', 'sd', 'si', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW']
+used_langs = ['am', 'ar', 'bn', 'bs', 'ca', 'ckb', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hi-Latn', 'hr', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'ne', 'nl', 'no', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'sd', 'si', 'sr', 'sv', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'zh-CN', 'zh-TW']
 
 def encode_dataset(in_path, out_path):
     def indexOrLast(c):
@@ -13,8 +13,8 @@ def encode_dataset(in_path, out_path):
     
     f_in = open(in_path, 'r', encoding='utf-8', newline='')
     f_out = open(out_path, 'w', encoding='utf-8', newline='')
-    reader = DictReader(f_in, delimiter=',')
-    writer = DictWriter(f_out, fieldnames=['id', 'lang', 'text'])
+    reader = DictReader(f_in, delimiter='\t')
+    writer = DictWriter(f_out, fieldnames=['id', 'lang', 'text'], delimiter='\t')
     writer.writeheader()
 
     for row in reader:
@@ -31,7 +31,7 @@ def encode_dataset(in_path, out_path):
     f_out.close()
 
 
-encode_dataset('data/raw/train_reduced.csv', 'data/train.csv')
-encode_dataset('data/raw/val_reduced.csv', 'data/val.csv')
-encode_dataset('data/raw/test_reduced.csv', 'data/test.csv')
+encode_dataset('data/processed/train.tsv', 'data/train.tsv')
+encode_dataset('data/processed/val.tsv', 'data/val.tsv')
+encode_dataset('data/processed/test.tsv', 'data/test.tsv')
 print('done')
