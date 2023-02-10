@@ -22,6 +22,6 @@ class EarlyStopping(TrainingCallback):
             if self.patience_counter < self.patience:
                 self.patience_counter += 1
             else:
-                return True
-        return False
+                return ['stop_training']
+        return []
 

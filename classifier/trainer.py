@@ -13,7 +13,7 @@ from visualizations import show_confusion_matrix
 
 class Trainer():
 
-    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, disable_debugging=True, callbacks=[]):
+    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, disable_debugging=True, resume_from_checkpoint=None callbacks=[]):
         # init variables
         self.task = 'multiclass'
         self.device = device
@@ -56,9 +56,11 @@ class Trainer():
                 "rec": ["Multiline", ["rec/test"]],
             },
         })
-        self.log_dir = Path('runs')
-        self.log_dir.mkdir(exist_ok=True)
         self.log_version = self.get_log_version()
+        self.log_dir = Path(f'runs/version_{self.log_version}')
+        self.log_dir.mkdir(parents=True)
+        if resume_from_checkpoint:
+            self.load_model_from_checkpoint(resume_from_checkpoint)
 
     def train(self):
         train_loader = self.dataloader.train_dataloader()
@@ -81,9 +83,15 @@ class Trainer():
                 # callbacks
                 val_metrics['loss'] = val_loss
                 stop_training = False
+                save_checkpoint = False
                 for callback in self.callbacks:
-                    if (callback(val_metrics, self.save_model)):
+                    result = callback(val_metrics, self.save_model)
+                    if "stop_training" in result:
                         stop_training = True
+                    if "save_checkpoint" in result:
+                        save_checkpoint = True
+                if save_checkpoint:
+                    self.save_checkpoint()
                 if stop_training:
                     return
 
@@ -104,7 +112,8 @@ class Trainer():
         texts = texts.to(self.device)
         labels = labels.to(self.device)
         loss = self.predict_with_model(texts, labels)
-        self.lr_scheduler.training_step(step_index)
+        if self.lr_scheduler:
+            self.lr_scheduler.training_step(step_index)
         return loss
 
     def validation_epoch(self, data):
@@ -113,7 +122,8 @@ class Trainer():
             for i, batch in enumerate(data):
                 losses[i] = self.validation_step(batch, i)
             loss = torch.mean(losses).item()
-            self.lr_scheduler.validation_epoch_end({'val_loss': loss})
+            if self.lr_scheduler:
+                self.lr_scheduler.validation_epoch_end({'val_loss': loss})
             metrics = self.val_metrics.compute()
             self.val_metrics.reset()
             self.tb_writer.add_scalar('loss/val', loss, self.epoch)
@@ -175,13 +185,17 @@ class Trainer():
         torch.autograd.profiler.profile(False)
         torch.autograd.profiler.emit_nvtx(False)
 
-    def save_model(self):
-        save_dir = Path()
-        torch.save({'epoch': EPOCH,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'loss': LOSS}, 
-	    'save/to/path/model.pth')
+    def save_checkpoint(self):
+        torch.save({'epoch': self.epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict()},
+	        self.log_dir / 'model.pth')
+
+    def load_model_from_checkpoint(self, checkpoint_path):
+        checkpoint = torch.load(checkpoint_path)
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.epoch = checkpoint['epoch']
 
     def get_log_version(self):
         return sum([p.is_file() for p in self.log_dir.iterdir()])
