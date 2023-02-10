@@ -10,6 +10,6 @@ def write_ids(path_in, path_out):
     with open(path_out, 'w', encoding="utf-8") as f_out:
         f_out.writelines(ids)
 
-write_ids('data/raw/uniform_precision.tsv', 'data/raw/uniform_precision_ids.tsv')
-write_ids('data/raw/recall_oriented.tsv', 'data/raw/recall_oriented_ids.tsv')
+write_ids('data/input/uniform_precision.tsv', 'data/input/uniform_precision_ids.tsv')
+write_ids('data/input/recall_oriented.tsv', 'data/input/recall_oriented_ids.tsv')
 print('done')
