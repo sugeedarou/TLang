@@ -7,7 +7,7 @@ from settings import *
 
 class TwitterDataset(torch.utils.data.Dataset):
 
-    class_names = ['am', 'ar', 'bn', 'ca', 'ckb', 'cs', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hl', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'nds', 'ne', 'nl', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'scb', 'sd', 'si', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW']
+    class_names = ['am', 'ar', 'bn', 'bs', 'ca', 'ckb', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hi-Latn', 'hr', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'ne', 'nl', 'no', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'sd', 'si', 'sr', 'sv', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'zh-CN', 'zh-TW']
     num_classes = len(class_names)
     characters = [l.strip() for l in open(CHARACTERS_PATH, 'r', encoding='utf-8')]
     num_characters = len(characters)
@@ -18,7 +18,7 @@ class TwitterDataset(torch.utils.data.Dataset):
         def load_data(path):
             data = []
             with open(path, 'r', encoding='utf-8') as f:
-                reader = csv.reader(f)
+                reader = csv.reader(f, delimiter='\t')
                 next(reader)
                 for row in reader:
                     id, lang, text = row

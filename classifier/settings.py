@@ -1,4 +1,4 @@
-TRAIN_PATH = 'data/train.csv'
-VAL_PATH = 'data/val.csv'
-TEST_PATH = 'data/test.csv'
-CHARACTERS_PATH = 'data/characters.csv'
+TRAIN_PATH = 'data/train.tsv'
+VAL_PATH = 'data/val.tsv'
+TEST_PATH = 'data/test.tsv'
+CHARACTERS_PATH = 'data/characters.tsv'

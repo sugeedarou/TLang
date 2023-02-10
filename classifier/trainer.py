@@ -6,6 +6,7 @@ from torchmetrics import ConfusionMatrix
 from tqdm import tqdm
 from math import floor
 from pathlib import Path
+from contextlib import nullcontext
 
 from settings import *
 from visualizations import show_confusion_matrix
@@ -13,7 +14,7 @@ from visualizations import show_confusion_matrix
 
 class Trainer():
 
-    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, disable_debugging=True, resume_from_checkpoint=None, callbacks=[]):
+    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, disable_debugging=True, resume_from_checkpoint=None, mixed_precision=False, callbacks=[]):
         # init variables
         self.task = 'multiclass'
         self.device = device
@@ -26,6 +27,7 @@ class Trainer():
         self.model.to(device)
         self.criterion = criterion
         self.optimizer = optimizer
+        self.mixed_precision = mixed_precision
         # performance metrics
         metric_args = {'task':self.task, 'num_classes':self.num_classes, 'average':'macro'}
         self.val_metrics = MetricCollection({
@@ -60,6 +62,7 @@ class Trainer():
         })
         if resume_from_checkpoint:
             self.load_model_from_checkpoint(resume_from_checkpoint)
+        self.grad_scaler = torch.cuda.amp.GradScaler()
 
     def train(self):
         train_loader = self.dataloader.train_dataloader()
@@ -94,14 +97,22 @@ class Trainer():
                 if stop_training:
                     return
 
+    def update_gradient_with_loss(self, loss):
+        if self.mixed_precision:
+            self.grad_scaler(loss).backward()
+            self.grad_scaler.step(self.optimizer)
+        else:
+            loss.backward()
+            self.optimizer.step()
+
     def training_epoch(self, data):
+         # mixed precision for faster training
         losses = torch.zeros(len(data))
         for i, batch in enumerate(data):
-            _, loss = self.training_step(batch, i)
             self.model.zero_grad()
-            loss.backward()
+            _, loss = self.training_step(batch, i)
             losses[i] = loss
-            self.optimizer.step()
+            self.update_gradient_with_loss(loss)
         loss = torch.mean(losses).item()
         self.tb_writer.add_scalar('loss/train', loss, self.epoch)
         return loss
@@ -175,7 +186,9 @@ class Trainer():
 
     def predict_with_model(self, texts, labels):
         labels_one_hot = Fun.one_hot(labels, num_classes=self.num_classes).float().to(self.device)
-        out = self.model(texts)
+        # mixed precision
+        with torch.cuda.amp.autocast() if self.mixed_precision else nullcontext():
+            out = self.model(texts)
         loss = self.criterion(out, labels_one_hot)
         return out, loss
 

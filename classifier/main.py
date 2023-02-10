@@ -38,7 +38,7 @@ if __name__ == '__main__':
                       lr=lr,
                       lr_scheduler=None,
                       max_epochs=30,
-                      resume_from_checkpoint='version_2/model.pth',
+                    #   resume_from_checkpoint='version_2/model.pth',
                       callbacks=[ModelCheckpoint(monitor='loss'),
                                  EarlyStopping(monitor='loss', patience=3)])
 
