@@ -46,7 +46,9 @@ class Trainer():
         self.lr = lr
         self.lr_scheduler = lr_scheduler
         self.callbacks = callbacks
-        self.tb_writer = SummaryWriter()
+        self.log_version = self.get_log_version()
+        self.log_dir = Path(f'runs/version_{self.log_version}')
+        self.tb_writer = SummaryWriter(self.log_dir)
         self.tb_writer.add_custom_scalars({
             "metrics": {
                 "loss": ["Multiline", ["loss/train", "loss/val"]],
@@ -56,9 +58,6 @@ class Trainer():
                 "rec": ["Multiline", ["rec/test"]],
             },
         })
-        self.log_version = self.get_log_version()
-        self.log_dir = Path(f'runs/version_{self.log_version}')
-        self.log_dir.mkdir(parents=True)
         if resume_from_checkpoint:
             self.load_model_from_checkpoint(resume_from_checkpoint)
 
@@ -70,26 +69,22 @@ class Trainer():
             self.epoch = epoch
             with tqdm(train_loader) as train_tepoch: 
                 # train
-                print('training')
                 train_tepoch.set_description(f'Epoch {epoch} / {self.max_epochs}')
                 if epoch > 1:
                     log_str_train = self.get_log_metrics_str('train', train_loss, [])
                     log_str_val   = self.get_log_metrics_str('val', val_loss, val_metrics)
                     train_tepoch.set_postfix_str(f'{log_str_train}, {log_str_val}')
-                print('start training')
                 train_loss = self.training_epoch(train_tepoch)
                 # validate
-                print('validating')
                 with tqdm(val_loader) as val_tepoch: 
                     val_tepoch.set_description('Validating')
                     val_loss, val_metrics = self.validation_epoch(val_tepoch)
                 # callbacks
-                print('callbacks')
                 val_metrics['loss'] = val_loss
                 stop_training = False
                 save_checkpoint = False
                 for callback in self.callbacks:
-                    result = callback(val_metrics)
+                    result = callback.epoch_end_callback(val_metrics)
                     if "stop_training" in result:
                         stop_training = True
                     if "save_checkpoint" in result:
@@ -101,14 +96,12 @@ class Trainer():
 
     def training_epoch(self, data):
         losses = torch.zeros(len(data))
-        print('initialized losses')
         for i, batch in enumerate(data):
-            print(i)
-            # _, loss = self.training_step(batch, i)
-            # self.model.zero_grad()
-            # loss.backward()
-            # losses[i] = loss
-            # self.optimizer.step()
+            _, loss = self.training_step(batch, i)
+            self.model.zero_grad()
+            loss.backward()
+            losses[i] = loss
+            self.optimizer.step()
         loss = torch.mean(losses).item()
         self.tb_writer.add_scalar('loss/train', loss, self.epoch)
         return loss
@@ -192,13 +185,14 @@ class Trainer():
         torch.autograd.profiler.emit_nvtx(False)
 
     def save_checkpoint(self):
+        self.log_dir.mkdir(parents=True, exist_ok=True)
         torch.save({'epoch': self.epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict()},
 	        self.log_dir / 'model.pth')
 
     def load_model_from_checkpoint(self, checkpoint_path):
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = torch.load(Path('runs') / checkpoint_path)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.epoch = checkpoint['epoch']
@@ -214,7 +208,7 @@ class Trainer():
     def get_log_metrics_str(self, type_name, loss, metrics):
         log_metrics_str = f'{type_name}_loss={self.format_num_for_print(loss)}'
         for i, metric in enumerate(metrics):
-            log_metrics_str += f', {type_name}_{metric}={self.format_num_for_print(metrics[metric].item())}'
+            log_metrics_str += f', {type_name}_{metric}={self.format_num_for_print(metrics[metric])}'
         return log_metrics_str
 
     def format_num_for_print(self, n):
