@@ -16,6 +16,6 @@ class EarlyStopping(TrainingCallback):
         op = operator.lt if self.mode == 'min' else operator.gt
 
         if op(metric, self.last_metric):
-            
+            self.create_checkpoint()
         return False
 
