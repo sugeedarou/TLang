@@ -13,7 +13,7 @@ from visualizations import show_confusion_matrix
 
 class Trainer():
 
-    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, disable_debugging=True, resume_from_checkpoint=None callbacks=[]):
+    def __init__(self, device, model, dataloader, criterion, optimizer, max_epochs=100, batch_size=16, lr=1e-3, lr_scheduler=None, disable_debugging=True, resume_from_checkpoint=None, callbacks=[]):
         # init variables
         self.task = 'multiclass'
         self.device = device
@@ -70,22 +70,26 @@ class Trainer():
             self.epoch = epoch
             with tqdm(train_loader) as train_tepoch: 
                 # train
+                print('training')
                 train_tepoch.set_description(f'Epoch {epoch} / {self.max_epochs}')
                 if epoch > 1:
                     log_str_train = self.get_log_metrics_str('train', train_loss, [])
                     log_str_val   = self.get_log_metrics_str('val', val_loss, val_metrics)
                     train_tepoch.set_postfix_str(f'{log_str_train}, {log_str_val}')
+                print('start training')
                 train_loss = self.training_epoch(train_tepoch)
                 # validate
+                print('validating')
                 with tqdm(val_loader) as val_tepoch: 
                     val_tepoch.set_description('Validating')
                     val_loss, val_metrics = self.validation_epoch(val_tepoch)
                 # callbacks
+                print('callbacks')
                 val_metrics['loss'] = val_loss
                 stop_training = False
                 save_checkpoint = False
                 for callback in self.callbacks:
-                    result = callback(val_metrics, self.save_model)
+                    result = callback(val_metrics)
                     if "stop_training" in result:
                         stop_training = True
                     if "save_checkpoint" in result:
@@ -97,12 +101,14 @@ class Trainer():
 
     def training_epoch(self, data):
         losses = torch.zeros(len(data))
+        print('initialized losses')
         for i, batch in enumerate(data):
-            _, loss = self.training_step(batch, i)
-            self.model.zero_grad()
-            loss.backward()
-            losses[i] = loss
-            self.optimizer.step()
+            print(i)
+            # _, loss = self.training_step(batch, i)
+            # self.model.zero_grad()
+            # loss.backward()
+            # losses[i] = loss
+            # self.optimizer.step()
         loss = torch.mean(losses).item()
         self.tb_writer.add_scalar('loss/train', loss, self.epoch)
         return loss
@@ -198,7 +204,7 @@ class Trainer():
         self.epoch = checkpoint['epoch']
 
     def get_log_version(self):
-        return sum([p.is_file() for p in self.log_dir.iterdir()])
+        return len([p for p in Path('runs').iterdir()])
 
     def get_gpu_device_if_available():
         device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"

@@ -1,14 +1,12 @@
-from training_callback import TrainingCallback
-from operator import operator
+from training_callbacks.training_callback import TrainingCallback
+import operator
 
-class EarlyStopping(TrainingCallback):
+class ModelCheckpoint(TrainingCallback):
 
-    def __init__(self, monitor, patience, mode='min'):
+    def __init__(self, monitor, mode='min'):
         super().__init__()
         self.monitor = monitor
-        self.patience = patience
         self.mode = mode
-        self.patience_counter = 0
         self.last_metric = float('inf') if mode == 'min' else float('-inf')
         
     def epoch_end_callback(self, val_metrics):

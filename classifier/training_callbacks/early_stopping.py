@@ -1,5 +1,5 @@
-from training_callback import TrainingCallback
-from operator import operator
+from training_callbacks.training_callback import TrainingCallback
+import operator
 
 class EarlyStopping(TrainingCallback):
 
@@ -11,7 +11,7 @@ class EarlyStopping(TrainingCallback):
         self.patience_counter = 0
         self.last_metric = float('inf') if mode == 'min' else float('-inf')
         
-    def epoch_end_callback(self, val_loss, val_metrics):
+    def epoch_end_callback(self, val_metrics):
         metric = val_metrics[self.monitor]
         op = operator.lt if self.mode == 'min' else operator.gt
 

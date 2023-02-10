@@ -6,4 +6,4 @@ class TrainingCallback:
         pass
 
     def epoch_end_callback(val_loss, val_metrics):
-        return False
+        return []

@@ -13,11 +13,11 @@ class GRUModel(nn.Module):
                           num_layers=1,   # 3
                           bidirectional=True, dropout=0.5,
                           batch_first=True)
-        # self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(0.2)
         self.fc = nn.Linear(self.rnn.hidden_size*2, self.output_size)
 
     def forward(self, batch):
         out, _ = self.rnn(batch)
-        # out = self.dropout(out[:, -1])
-        out = self.fc(out[:, -1])
+        out = self.dropout(out[:, -1])
+        out = self.fc(out)
         return out
