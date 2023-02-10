@@ -45,7 +45,7 @@ class DataLoader():
         class_weights = torch.tensor(class_weights, dtype=torch.float)
         return class_weights
 
-    def collate_fn(self, batch, batch_size_padding=True, padding_type="wrap"):
+    def collate_fn(self, batch, batch_size_padding=True, padding_type="0"):
         '''
             pads a batch to uniform size (all items in the batch have same dimension after)
         :param batch_size_padding:
