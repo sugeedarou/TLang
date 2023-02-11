@@ -83,11 +83,10 @@ class Trainer():
                     val_tepoch.set_description('Validating')
                     val_loss, val_metrics = self.validation_epoch(val_tepoch)
                 # callbacks
-                val_metrics['loss'] = val_loss
                 stop_training = False
                 save_checkpoint = False
                 for callback in self.callbacks:
-                    result = callback.epoch_end_callback(val_metrics)
+                    result = callback.epoch_end_callback(val_loss, val_metrics)
                     if "stop_training" in result:
                         stop_training = True
                     if "save_checkpoint" in result:
@@ -221,10 +220,10 @@ class Trainer():
     def get_log_metrics_str(self, type_name, loss, metrics):
         log_metrics_str = f'{type_name}_loss={self.format_num_for_print(loss)}'
         for i, metric in enumerate(metrics):
-            log_metrics_str += f', {type_name}_{metric}={self.format_num_for_print(metrics[metric])}'
+            log_metrics_str += f', {type_name}_{metric}={self.format_num_for_print(metrics[metric].item())}'
         return log_metrics_str
 
     def format_num_for_print(self, n):
         if n > 1:
-            return floor(n*100) / 100
-        return floor(n*1000) / 1000
+            return round(n*100) / 100
+        return round(n*1000) / 1000

@@ -75,8 +75,6 @@ newlangs = delete_not_lang_70(newlangs)
 newlangs = delete_langs_not_in_train_and_test(newlangs, train_val_in, test_in)
 newlangs = list(newlangs)
 newlangs.sort()
-print(newlangs)
-print(len(newlangs))
 
 print('writing output')
 write_output_file(train_val_in, train_val_out, newlangs)
