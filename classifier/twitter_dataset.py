@@ -7,7 +7,7 @@ from settings import *
 
 class TwitterDataset(torch.utils.data.Dataset):
 
-    class_names = ['am', 'ar', 'bn', 'bs', 'ca', 'ckb', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'gu', 'he', 'hi', 'hi-Latn', 'hr', 'hu', 'hy', 'id', 'it', 'ja', 'ka', 'km', 'kn', 'ko', 'lo', 'lv', 'ml', 'mr', 'my', 'ne', 'nl', 'no', 'pa', 'pl', 'ps', 'pt', 'ro', 'ru', 'sd', 'si', 'sr', 'sv', 'ta', 'te', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'zh-CN', 'zh-TW']
+    class_names = open(LANGUAGES_PATH, 'r', encoding='utf-8', newline='').read().split('\n')[:-1]
     num_classes = len(class_names)
     characters = [l.strip() for l in open(CHARACTERS_PATH, 'r', encoding='utf-8')]
     num_characters = len(characters)

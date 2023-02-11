@@ -56,6 +56,9 @@ def write_output_file(f_in, f_out, newlangs):
         if lang in newlangs:
             writer.writerow(row)
 
+    with open('data/langs.tsv', 'w', encoding='utf-8', newline='') as f:
+        f.write('\n'.join(newlangs)+'\n')
+
 
 MIN_SAMPLES_COUNT = 100
 
