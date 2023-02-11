@@ -23,7 +23,7 @@ if __name__ == '__main__':
     #                           5.3504, 2.0883, 2.9555, 1.9716, 2.0256, 2.6433, 2.5647, 2.0939, 3.5184,
     #                           2.0443, 0.4850, 8.3871, 0.8428, 1.9109, 2.7907, 1.8762, 2.2166, 2.0661,
     #                           1.4963, 3.5184, 1.6385, 7.2505, 3.6168, 3.3658, 2.8840]).to(device)  # recalculate with dataloader.calculate_class_weights
-    
+    torch.manual_seed(123)
     model = GRUModel(TwitterDataset.num_classes)
     dataloader = DataLoader(dataset=TwitterDataset,
                             batch_size=batch_size, tweet_max_characters=128)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
                       batch_size=batch_size,
                       lr=lr,
                       lr_scheduler=None,
-                      max_epochs=10,
+                      max_epochs=1,
                     #   resume_from_checkpoint='version_2/model.pth',
                       callbacks=[ModelCheckpoint(monitor='loss'),
                                  EarlyStopping(monitor='loss', patience=3)])
