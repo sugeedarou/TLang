@@ -197,7 +197,6 @@ class Trainer():
         torch.autograd.profiler.emit_nvtx(False)
 
     def save_checkpoint(self):
-        self.log_dir.mkdir(parents=True, exist_ok=True)
         torch.save({'epoch': self.epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict()},
@@ -210,6 +209,8 @@ class Trainer():
         self.epoch = checkpoint['epoch']
 
     def get_log_version(self):
+        if not Path('runs').exists():
+            return 0
         return len([p for p in Path('runs').iterdir()])
 
     def get_gpu_device_if_available():

@@ -19,7 +19,8 @@ class DataLoader():
         self.loader_args = {'batch_size': self.batch_size,
                             'collate_fn': self.collate_fn,
                             'num_workers': 12,
-                            'pin_memory': True}
+                            'pin_memory': True,
+                            'persistent_workers': True}
 
         self.train_ds = self.dataset(TRAIN_PATH, tweet_max_characters)
         self.val_ds = self.dataset(VAL_PATH, tweet_max_characters)
