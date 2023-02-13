@@ -7,7 +7,7 @@ def cleanup_dataset(path):
         text = row['text']
         text = re.sub(r'http\S+', '', text) # no urls
         # text = re.sub(r'@\S*', '', text) # no user refs
-        # text = re.sub(r'#\S+', '', text) # no hashtags
+        text = re.sub(r'#\S+', '', text) # no hashtags
         if text != '':
             df.at[index, 'text'] = text
         else:

@@ -8,8 +8,8 @@ def update_characters():
     with open('data/characters.tsv', 'r', encoding='utf-8', newline='') as f_in:
         for line in f_in:
             c = line.replace('\n', '').replace('\r', '')
-            if not emoji.is_emoji(c):
-                characters.add(c)
+            c.lower()
+            characters.add(c)
     characters = list(characters)
     characters.sort()
             
@@ -23,11 +23,8 @@ def cleanup_dataset(path):
     df = pd.read_csv(path, sep='\t')
     for index, row in df.iterrows():
         text = row['text']
-        text = emoji.replace_emoji(text, replace='') # no emojis
-        if text != '':
-            df.at[index, 'text'] = text
-        else:
-            df.drop(index, inplace=True)
+        text = text.lower()
+        df.at[index, 'text'] = text
     df.to_csv(path, sep='\t', index=False)
 
 

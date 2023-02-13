@@ -9,15 +9,13 @@ class GRUModel(nn.Module):
         super().__init__()
         self.output_size = output_size
         self.rnn = nn.GRU(input_size=TwitterDataset.num_characters+1,
-                          hidden_size=256, # 256
-                          num_layers=3,   # 3
+                          hidden_size=128, # 256
+                          num_layers=2,   # 3
                           bidirectional=True, dropout=0.5,
                           batch_first=True)
-        # self.dropout = nn.Dropout(0.2)
         self.fc = nn.Linear(self.rnn.hidden_size*2, self.output_size)
 
     def forward(self, batch):
         out, _ = self.rnn(batch)
-        # out = self.dropout(out[:, -1])
         out = self.fc(out[:, -1])
         return out

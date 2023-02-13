@@ -19,7 +19,6 @@ merge_simliar_languages('data/processed/test.tsv')
 
 with open('data/langs.tsv', 'r+', encoding='utf-8', newline='') as f:
     langs = f.read().split('\n')[:-1]
-    print(langs)
     
     for i in range(len(langs)):
         lang = langs[i]
@@ -27,6 +26,9 @@ with open('data/langs.tsv', 'r+', encoding='utf-8', newline='') as f:
             lang = replace_dict[lang]
         langs[i] = lang
 
+    langs = list(set(langs))
+    langs.sort()
+
     f.seek(0)
-    f.write('\n'.join(set(langs))+'\n')
+    f.write('\n'.join(langs)+'\n')
     f.truncate()

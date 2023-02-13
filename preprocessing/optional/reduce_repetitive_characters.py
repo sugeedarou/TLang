@@ -8,7 +8,10 @@ def reduce_dataset(path):
         text = re.sub(r'(.)\1{3,}', r'\1\1', text) # replace >3 repeats with 3 repeats
         text = re.sub(' +', ' ', text) # no double whitespaces
         text = text.strip() # no trailing whitespaces
-        df.at[index, 'text'] = text
+        if text != '':
+            df.at[index, 'text'] = text
+        else:
+            df.drop(index, inplace=True)
     df.to_csv(path, sep='\t', index=False)
 
 

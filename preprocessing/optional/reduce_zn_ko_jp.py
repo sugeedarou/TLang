@@ -33,7 +33,10 @@ def reduce_dataset(path):
     for index, row in df.iterrows():
         text = row['text']
         text = ''.join([reduce_char(c) for c in text])
-        df.at[index, 'text'] = text
+        if text != '':
+            df.at[index, 'text'] = text
+        else:
+            df.drop(index, inplace=True)
     df.to_csv(path, sep='\t', index=False)
 
 
