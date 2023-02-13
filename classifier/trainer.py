@@ -98,8 +98,9 @@ class Trainer():
 
     def update_gradient_with_loss(self, loss):
         if self.mixed_precision:
-            self.grad_scaler(loss).backward()
+            self.grad_scaler.scale(loss).backward()
             self.grad_scaler.step(self.optimizer)
+            self.grad_scaler.update()
         else:
             loss.backward()
             self.optimizer.step()
@@ -118,6 +119,8 @@ class Trainer():
 
     def training_step(self, batch, step_index):
         _, _, labels, texts = batch
+        for label in labels:
+            print(label)
         texts = texts.to(self.device)
         labels = labels.to(self.device)
         loss = self.predict_with_model(texts, labels)
