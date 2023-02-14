@@ -32,7 +32,7 @@ if __name__ == '__main__':
     trainer = Trainer(device=device,
                       model=model,
                       dataloader=dataloader,
-                      criterion=nn.CrossEntropyLoss(),
+                      criterion=nn.CrossEntropyLoss(weight=class_weights),
                       optimizer=optimizer,
                       batch_size=batch_size,
                       lr=lr,
@@ -43,8 +43,8 @@ if __name__ == '__main__':
                                                           lr_patience=0,
                                                           lr_reduce_factor=0.5,
                                                           steps_per_epoch=len(dataloader.train_ds) / batch_size),
-                      max_epochs=100,
-                    #   resume_from_checkpoint='version_2/model.pth',
+                      max_epochs=16,
+                      resume_from_checkpoint='version_35/model.pth',
                       callbacks=[ModelCheckpoint(monitor='loss'),
                                  EarlyStopping(monitor='loss', patience=3)])
 

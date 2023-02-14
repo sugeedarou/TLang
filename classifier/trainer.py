@@ -7,6 +7,7 @@ from tqdm import tqdm
 from math import floor
 from pathlib import Path
 from contextlib import nullcontext
+import pandas as pd
 
 from settings import *
 from visualizations import show_confusion_matrix
@@ -44,6 +45,7 @@ class Trainer():
         # self.f1_metric = F1(num_classes=self.dataset.num_classes)
         # optional parameters
         self.max_epochs = max_epochs
+        self.epoch = 1
         self.batch_size = batch_size
         self.lr = lr
         self.lr_scheduler = lr_scheduler
@@ -67,13 +69,14 @@ class Trainer():
     def train(self):
         train_loader = self.dataloader.train_dataloader()
         val_loader = self.dataloader.val_dataloader()
+        train_loss = None
 
-        for epoch in range(1, self.max_epochs+1):
+        for epoch in range(self.epoch, self.max_epochs+1):
             self.epoch = epoch
             with tqdm(train_loader) as train_tepoch: 
                 # train
                 train_tepoch.set_description(f'Epoch {epoch} / {self.max_epochs}')
-                if epoch > 1:
+                if train_loss:
                     log_str_train = self.get_log_metrics_str('train', train_loss, [])
                     log_str_val   = self.get_log_metrics_str('val', val_loss, val_metrics)
                     train_tepoch.set_postfix_str(f'{log_str_train}, {log_str_val}')
@@ -119,8 +122,6 @@ class Trainer():
 
     def training_step(self, batch, step_index):
         _, _, labels, texts = batch
-        for label in labels:
-            print(label)
         texts = texts.to(self.device)
         labels = labels.to(self.device)
         loss = self.predict_with_model(texts, labels)
@@ -153,6 +154,7 @@ class Trainer():
         return loss
     
     def test(self):
+        self.test_predictions_file = open('test_predictions.tsv', 'w', encoding='utf-8', newline='')
         test_loader = self.dataloader.test_dataloader()
         with torch.no_grad(), tqdm(test_loader) as tepoch: 
             tepoch.set_description('Testing')
@@ -161,6 +163,7 @@ class Trainer():
             print(log_str)
             confmat = self.confmat_metric.compute().cpu()
             show_confusion_matrix(confmat)
+        self.test_predictions_file.close()
 
     def test_epoch(self, data):
         with torch.no_grad():
@@ -177,13 +180,20 @@ class Trainer():
             return loss, metrics
 
     def test_step(self, batch, _):
-        _, _, labels, texts = batch
+        ids, _, labels, texts = batch
         texts = texts.to(self.device)
         labels = labels.to(self.device)
         out, loss = self.predict_with_model(texts, labels)
         preds = out.argmax(1)
+
         self.test_metrics(preds, labels)
         self.confmat_metric(preds, labels)
+
+        labels = labels.cpu()
+        texts = texts.cpu()
+        preds = preds.cpu()
+        for i in range(len(ids)):
+            self.test_predictions_file.write(f'{ids[i]}\t{preds[i].item()}\n')
         return loss
 
     def predict_with_model(self, texts, labels):
@@ -193,6 +203,10 @@ class Trainer():
             out = self.model(texts)
         loss = self.criterion(out, labels_one_hot)
         return out, loss
+
+    def write_test_predictions_to_file(self):
+        df = pd.DataFrame(self.test_predictions, columns=['id', 'lang', 'text', 'pred'])
+        df.to_csv('predictions.tsv', sep='\t', index=False)
 
     def disable_debugging(self):
         torch.autograd.set_detect_anomaly(False)
@@ -209,7 +223,7 @@ class Trainer():
         checkpoint = torch.load(Path('runs') / checkpoint_path)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        self.epoch = checkpoint['epoch']
+        self.epoch = checkpoint['epoch'] + 1
 
     def get_log_version(self):
         if not Path('runs').exists():
