@@ -154,7 +154,10 @@ class Trainer():
         return loss
     
     def test(self):
-        self.test_predictions_file = open('test_predictions.tsv', 'w', encoding='utf-8', newline='')
+        checkpoint_path = self.log_dir / 'model.pth'
+        if checkpoint_path.exists():
+            self.load_model_from_checkpoint(checkpoint_path)
+        # self.test_predictions_file = open('test_predictions.tsv', 'w', encoding='utf-8', newline='')
         test_loader = self.dataloader.test_dataloader()
         with torch.no_grad(), tqdm(test_loader) as tepoch: 
             tepoch.set_description('Testing')
@@ -163,7 +166,7 @@ class Trainer():
             print(log_str)
             confmat = self.confmat_metric.compute().cpu()
             show_confusion_matrix(confmat)
-        self.test_predictions_file.close()
+        # self.test_predictions_file.close()
 
     def test_epoch(self, data):
         with torch.no_grad():
@@ -189,11 +192,11 @@ class Trainer():
         self.test_metrics(preds, labels)
         self.confmat_metric(preds, labels)
 
-        labels = labels.cpu()
-        texts = texts.cpu()
-        preds = preds.cpu()
-        for i in range(len(ids)):
-            self.test_predictions_file.write(f'{ids[i]}\t{preds[i].item()}\n')
+        # labels = labels.cpu()
+        # texts = texts.cpu()
+        # preds = preds.cpu()
+        # for i in range(len(ids)):
+        #     self.test_predictions_file.write(f'{ids[i]}\t{preds[i].item()}\n')
         return loss
 
     def predict_with_model(self, texts, labels):
@@ -220,7 +223,8 @@ class Trainer():
 	        self.log_dir / 'model.pth')
 
     def load_model_from_checkpoint(self, checkpoint_path):
-        checkpoint = torch.load(Path('runs') / checkpoint_path)
+        checkpoint = torch.load(checkpoint_path)
+        print('loading model from checkpoint {checkpoint_path}')
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.epoch = checkpoint['epoch'] + 1

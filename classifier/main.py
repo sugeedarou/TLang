@@ -17,7 +17,7 @@ lr = 1e-3
 if __name__ == '__main__':
     device = Trainer.get_gpu_device_if_available()
 
-    class_weights = torch.tensor([2.2885, 0.4876, 2.0230, 7.4240, 3.0012, 9.0210, 2.3653, 1.9969, 0.0733,
+    class_weights = torch.tensor([2.2885, 0.4876, 2.0230, 7.4240, 3.0012, 9.0210, 2.3653, 1.9969, 0.0183,
                               0.2112, 3.7031, 9.4037, 1.0716, 2.1226, 2.0151, 2.3908, 1.3587, 9.4037,
                               2.2293, 0.4284, 1.8672, 0.1324, 1.8341, 2.0633, 1.9468, 2.3298, 2.4826,
                               5.3504, 2.0883, 2.9555, 1.9716, 2.0256, 2.6433, 2.5647, 2.0939, 3.5184,
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     model = GRUModel(TwitterDataset.num_classes)
     dataloader = DataLoader(dataset=TwitterDataset,
                             batch_size=batch_size, tweet_max_characters=128)
-    # optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-1)
+    # optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-2)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     trainer = Trainer(device=device,
                       model=model,
@@ -44,9 +44,9 @@ if __name__ == '__main__':
                                                           lr_reduce_factor=0.5,
                                                           steps_per_epoch=len(dataloader.train_ds) / batch_size),
                       max_epochs=16,
-                      resume_from_checkpoint='version_35/model.pth',
+                        # resume_from_checkpoint='runs/version_78/model.pth',
                       callbacks=[ModelCheckpoint(monitor='loss'),
-                                 EarlyStopping(monitor='loss', patience=3)])
+                                 EarlyStopping(monitor='loss', patience=5)])
 
     trainer.train()
     trainer.test()
