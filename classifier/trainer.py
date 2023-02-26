@@ -26,6 +26,8 @@ class Trainer():
             self.disable_debugging()
         self.model = model
         self.model.to(device)
+        model_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        print(f'Model has {model_total_params} parameters')
         self.criterion = criterion
         self.optimizer = optimizer
         self.mixed_precision = mixed_precision
