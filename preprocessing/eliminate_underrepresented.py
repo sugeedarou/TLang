@@ -1,4 +1,5 @@
 from csv import DictReader, DictWriter
+from pathlib import Path
 
 def get_shared_langs(f_train, f_test):
     def get_langs_in_dataset(f):
@@ -23,15 +24,15 @@ def count_samples_per_language(f):
             samples_per_language[lang] += 1
     return samples_per_language
 
-def delete_langs_with_less_than_x(samples_per_language, x):
+def delete_langs_with_less_than_x(samples_per_language, min_samples_count):
     newlangs = []
     deleted_langs_count = 0
     for lang in samples_per_language:
         count = samples_per_language[lang]
-        if count >= MIN_SAMPLES_COUNT:
+        if count >= min_samples_count:
             newlangs.append(lang)
         else:
-            print(f'removed {lang} which has {count} < {MIN_SAMPLES_COUNT} samples')
+            print(f'removed {lang} which has {count} < {min_samples_count} samples')
             deleted_langs_count += 1
 
     return set(newlangs)
@@ -59,29 +60,23 @@ def write_output_file(f_in, f_out, newlangs):
     with open('data/langs.tsv', 'w', encoding='utf-8', newline='') as f:
         f.write('\n'.join(newlangs)+'\n')
 
+def eliminate_underrepresented(min_samples_count):
+    Path('data/processed').mkdir(exist_ok=True)
+    train_val_in = open('data/input/train_val.tsv', 'r', encoding='utf-8', newline='')
+    train_val_out = open('data/processed/train_val.tsv', 'w', encoding='utf-8', newline='')
+    test_in = open('data/input/test.tsv', 'r', encoding='utf-8', newline='')
+    test_out = open('data/processed/test.tsv', 'w', encoding='utf-8', newline='')
 
-MIN_SAMPLES_COUNT = 100
+    samples_per_language = count_samples_per_language(train_val_in)
+    train_val_in.seek(0)
+    newlangs = delete_langs_with_less_than_x(samples_per_language, min_samples_count)
+    newlangs = delete_not_lang_70(newlangs)
+    newlangs = delete_langs_not_in_train_and_test(newlangs, train_val_in, test_in)
+    newlangs = list(newlangs)
+    newlangs.sort()
 
-train_val_in = open('data/input/train_val.tsv', 'r', encoding='utf-8', newline='')
-train_val_out = open('data/processed/train_val.tsv', 'w', encoding='utf-8', newline='')
-test_in = open('data/input/test.tsv', 'r', encoding='utf-8', newline='')
-test_out = open('data/processed/test.tsv', 'w', encoding='utf-8', newline='')
+    write_output_file(train_val_in, train_val_out, newlangs)
+    write_output_file(test_in, test_out, newlangs)
 
-print('counting samples')
-samples_per_language = count_samples_per_language(train_val_in)
-train_val_in.seek(0)
-newlangs = delete_langs_with_less_than_x(samples_per_language, MIN_SAMPLES_COUNT)
-newlangs = delete_not_lang_70(newlangs)
-newlangs = delete_langs_not_in_train_and_test(newlangs, train_val_in, test_in)
-newlangs = list(newlangs)
-newlangs.sort()
-
-print('writing output')
-write_output_file(train_val_in, train_val_out, newlangs)
-write_output_file(test_in, test_out, newlangs)
-
-train_val_in.close()
-train_val_out.close()
-test_in.close()
-test_out.close()
-print('done')
+    train_val_in.close()
+    test_in.close()

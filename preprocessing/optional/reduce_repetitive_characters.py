@@ -15,6 +15,6 @@ def reduce_dataset(path):
     df.to_csv(path, sep='\t', index=False)
 
 
-reduce_dataset('data/processed/train_val.tsv')
-reduce_dataset('data/processed/test.tsv')
-print('done')
+def reduce_repetitive_characters():
+    reduce_dataset('data/processed/train_val.tsv')
+    reduce_dataset('data/processed/test.tsv')

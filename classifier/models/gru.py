@@ -1,14 +1,13 @@
-import torch.nn as nn
-
 from settings import *
 from twitter_dataset import TwitterDataset
+from models.rnns import *
 
 
 class GRUModel(nn.Module):
     def __init__(self, output_size):
         super().__init__()
         self.output_size = output_size
-        self.rnn = nn.GRU(input_size=TwitterDataset.num_characters+1,
+        self.rnn = GRU(input_size=TwitterDataset.num_characters+1,
                           hidden_size=128, # 256
                           num_layers=2,   # 3
                           bidirectional=True, dropout=0.4,

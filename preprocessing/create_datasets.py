@@ -36,7 +36,3 @@ def create_dataset(id_lang_path, in_path, out_path):
     df = pd.read_csv(out_path, delimiter='\t')
     df = df.sort_values(['lang', 'text'], ascending=[True, True])
     df.to_csv(out_path, sep='\t', index=False)
-
-create_dataset('data/input/uniform_precision.tsv', 'data/input/uniform_precision_data.csv', 'data/input/train_val.tsv')
-create_dataset('data/input/recall_oriented.tsv', 'data/input/recall_data.csv', 'data/input/test.tsv')
-print('done')

@@ -1,22 +1,26 @@
 import pandas as pd
 
-chars_by_lang = {}
-df = pd.read_csv('data/processed/train_val.tsv', sep='\t')
-for index, row in df.iterrows():
-    lang = row['lang']
-    text = row['text']
-    if not lang in chars_by_lang:
-        chars_by_lang[lang] = set()
-    chars_by_lang[lang].update(text)
 
 exclusive_chars_by_lang = {}
-for lang in chars_by_lang:
-    exclusive = chars_by_lang[lang]
-    for lang2 in chars_by_lang:
-        if lang2 == lang:
-            continue
-        exclusive = exclusive.difference(chars_by_lang[lang2])
-    exclusive_chars_by_lang[lang] = list(exclusive)
+
+def create_exclusive_chars_by_lang():
+    global exclusive_chars_by_lang
+    chars_by_lang = {}
+    df = pd.read_csv('data/processed/train_val.tsv', sep='\t')
+    for _, row in df.iterrows():
+        lang = row['lang']
+        text = row['text']
+        if not lang in chars_by_lang:
+            chars_by_lang[lang] = set()
+        chars_by_lang[lang].update(text)
+
+    for lang in chars_by_lang:
+        exclusive = chars_by_lang[lang]
+        for lang2 in chars_by_lang:
+            if lang2 == lang:
+                continue
+            exclusive = exclusive.difference(chars_by_lang[lang2])
+        exclusive_chars_by_lang[lang] = list(exclusive)
 
 def reduce_char(c):
     for lang in exclusive_chars_by_lang:
@@ -25,7 +29,15 @@ def reduce_char(c):
             return chars[0]
     return c
 
-def reduce_characters():
+def update_dataset(path):
+    df = pd.read_csv(path, sep='\t')
+    for index, row in df.iterrows():
+        text = row['text']
+        text = ''.join([reduce_char(c) for c in text])
+        df.at[index, 'text'] = text
+    df.to_csv(path, sep='\t', index=False)
+
+def update_characters_list():
     characters = set()
     with open('data/characters.tsv', 'r', encoding='utf-8', newline='') as f_in:
         for line in f_in:
@@ -41,16 +53,8 @@ def reduce_characters():
     
     return characters
 
-def reduce_dataset(path):
-    df = pd.read_csv(path, sep='\t')
-    for index, row in df.iterrows():
-        text = row['text']
-        text = ''.join([reduce_char(c) for c in text])
-        df.at[index, 'text'] = text
-    df.to_csv(path, sep='\t', index=False)
-
-
-characters = reduce_characters()
-reduce_dataset('data/processed/train_val.tsv')
-reduce_dataset('data/processed/test.tsv')
-print('done')
+def reduce_distinct_characters():
+    create_exclusive_chars_by_lang()
+    update_dataset('data/processed/train_val.tsv')
+    update_dataset('data/processed/test.tsv')
+    update_characters_list()

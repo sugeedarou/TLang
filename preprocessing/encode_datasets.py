@@ -1,8 +1,16 @@
 from csv import DictReader, DictWriter
 
-characters = [l.replace('\n', '') for l in open('data/characters.tsv', 'r', encoding='utf-8')]
-characters_count = len(characters)
-used_langs = open('data/langs.tsv', 'r', encoding='utf-8', newline='').read().split('\n')[:-1]
+characters = []
+characters_count = 0
+used_langs = []
+
+def load_characters_and_languages():
+    global characters
+    global characters_count
+    global used_langs
+    characters = [l.replace('\n', '') for l in open('data/characters.tsv', 'r', encoding='utf-8')]
+    characters_count = len(characters)
+    used_langs = open('data/langs.tsv', 'r', encoding='utf-8', newline='').read().split('\n')[:-1]
 
 def encode_dataset(in_path, out_path):
     def indexOrLast(c):
@@ -29,9 +37,3 @@ def encode_dataset(in_path, out_path):
     
     f_in.close()
     f_out.close()
-
-
-encode_dataset('data/processed/train.tsv', 'data/train.tsv')
-encode_dataset('data/processed/val.tsv', 'data/val.tsv')
-encode_dataset('data/processed/test.tsv', 'data/test.tsv')
-print('done')

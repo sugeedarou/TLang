@@ -1,6 +1,4 @@
 import pandas as pd
-import os
-import tempfile
 
 replace_dict = {
     'sr': 'scb', 'hr': 'scb', 'bs': 'scb', # merge serbian, croatian, bosnian
@@ -8,27 +6,29 @@ replace_dict = {
     'hi-Latn': 'hl', 'ur': 'hl' # merge (latinized) hindu, urdu
 }
 
-
-def merge_simliar_languages(path):
+def update_dataset(path):
     df = pd.read_csv(path, sep='\t')
     df.replace({'lang': replace_dict}, inplace=True)
     df.to_csv(path, sep='\t', index=False)
 
-merge_simliar_languages('data/processed/train_val.tsv')
-merge_simliar_languages('data/processed/test.tsv')
+def update_languages_list():
+    with open('data/langs.tsv', 'r+', encoding='utf-8', newline='') as f:
+        langs = f.read().split('\n')[:-1]
+        
+        for i in range(len(langs)):
+            lang = langs[i]
+            if lang in replace_dict:
+                lang = replace_dict[lang]
+            langs[i] = lang
 
-with open('data/langs.tsv', 'r+', encoding='utf-8', newline='') as f:
-    langs = f.read().split('\n')[:-1]
-    
-    for i in range(len(langs)):
-        lang = langs[i]
-        if lang in replace_dict:
-            lang = replace_dict[lang]
-        langs[i] = lang
+        langs = list(set(langs))
+        langs.sort()
 
-    langs = list(set(langs))
-    langs.sort()
+        f.seek(0)
+        f.write('\n'.join(langs)+'\n')
+        f.truncate()
 
-    f.seek(0)
-    f.write('\n'.join(langs)+'\n')
-    f.truncate()
+def merge_simliar_languages():
+    update_dataset('data/processed/train_val.tsv')
+    update_dataset('data/processed/test.tsv')
+    update_languages_list()

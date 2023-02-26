@@ -12,7 +12,18 @@ def reduce_char(c):
         return '가'
     return c
 
-def reduce_characters():
+def update_dataset(path):
+    df = pd.read_csv(path, sep='\t')
+    for index, row in df.iterrows():
+        text = row['text']
+        text = ''.join([reduce_char(c) for c in text])
+        if text != '':
+            df.at[index, 'text'] = text
+        else:
+            df.drop(index, inplace=True)
+    df.to_csv(path, sep='\t', index=False)
+
+def update_characters_list():
     characters = set()
     with open('data/characters.tsv', 'r', encoding='utf-8', newline='') as f_in:
         for line in f_in:
@@ -28,19 +39,7 @@ def reduce_characters():
     
     return characters
 
-def reduce_dataset(path):
-    df = pd.read_csv(path, sep='\t')
-    for index, row in df.iterrows():
-        text = row['text']
-        text = ''.join([reduce_char(c) for c in text])
-        if text != '':
-            df.at[index, 'text'] = text
-        else:
-            df.drop(index, inplace=True)
-    df.to_csv(path, sep='\t', index=False)
-
-
-characters = reduce_characters()
-reduce_dataset('data/processed/train_val.tsv')
-reduce_dataset('data/processed/test.tsv')
-print('done')
+def reduce_zn_ko_jp():
+    update_dataset('data/processed/train_val.tsv')
+    update_dataset('data/processed/test.tsv')
+    update_characters_list()

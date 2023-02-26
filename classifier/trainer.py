@@ -42,7 +42,6 @@ class Trainer():
             'rec': Recall(**metric_args).to(device),
         })
         self.confmat_metric = ConfusionMatrix(task=self.task, num_classes=self.num_classes).to(device)
-        # self.f1_metric = F1(num_classes=self.dataset.num_classes)
         # optional parameters
         self.max_epochs = max_epochs
         self.epoch = 1

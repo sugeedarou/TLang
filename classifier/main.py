@@ -27,7 +27,6 @@ if __name__ == '__main__':
     model = GRUModel(TwitterDataset.num_classes)
     dataloader = DataLoader(dataset=TwitterDataset,
                             batch_size=batch_size, tweet_max_characters=128)
-    # optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-2)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     trainer = Trainer(device=device,
                       model=model,

@@ -4,7 +4,6 @@ from torch.nn.utils.rnn import pad_sequence
 import torch.nn.functional as F
 from sklearn.utils import class_weight
 import numpy as np
-from twitter_dataset import TwitterDataset
 
 from settings import *
 
