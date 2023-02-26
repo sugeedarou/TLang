@@ -50,10 +50,3 @@ if __name__ == '__main__':
 
     trainer.train()
     trainer.test()
-
-"""CyclicPlateauScheduler(optimizer=optimizer,
-                                                          initial_lr=lr,
-                                                          min_improve_factor=0.97,
-                                                          lr_patience=0,
-                                                          lr_reduce_factor=0.5,
-                                                          steps_per_epoch=len(dataloader.train_ds) / batch_size),"""

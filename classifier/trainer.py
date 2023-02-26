@@ -157,7 +157,6 @@ class Trainer():
         checkpoint_path = self.log_dir / 'model.pth'
         if checkpoint_path.exists():
             self.load_model_from_checkpoint(checkpoint_path)
-        # self.test_predictions_file = open('test_predictions.tsv', 'w', encoding='utf-8', newline='')
         test_loader = self.dataloader.test_dataloader()
         with torch.no_grad(), tqdm(test_loader) as tepoch: 
             tepoch.set_description('Testing')
@@ -166,7 +165,6 @@ class Trainer():
             print(log_str)
             confmat = self.confmat_metric.compute().cpu()
             show_confusion_matrix(confmat)
-        # self.test_predictions_file.close()
 
     def test_epoch(self, data):
         with torch.no_grad():
@@ -192,11 +190,6 @@ class Trainer():
         self.test_metrics(preds, labels)
         self.confmat_metric(preds, labels)
 
-        # labels = labels.cpu()
-        # texts = texts.cpu()
-        # preds = preds.cpu()
-        # for i in range(len(ids)):
-        #     self.test_predictions_file.write(f'{ids[i]}\t{preds[i].item()}\n')
         return loss
 
     def predict_with_model(self, texts, labels):
