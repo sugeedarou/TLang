@@ -48,10 +48,10 @@ class BiGRU(nn.Module):
         seq_length = input.size(1)
 
         # initialize hidden layers
-        hf = Variable(torch.zeros(self.num_layers, batch_size, seq_length,
-                                  self.hidden_size).to(self.device))
-        hb = Variable(torch.zeros(self.num_layers, batch_size, seq_length, 
-                                    self.hidden_size).to(self.device))
+        hf = torch.zeros(self.num_layers, batch_size, seq_length,
+                                  self.hidden_size).to(self.device)
+        hb = torch.zeros(self.num_layers, batch_size, seq_length, 
+                                    self.hidden_size).to(self.device)
         
         # initialize outputs
         outs_f = torch.empty(size=(input.size(1), batch_size, self.hidden_size),
@@ -65,18 +65,19 @@ class BiGRU(nn.Module):
             # use hidden states of forward and backward gru as next input sequence
             if layer == 0:
                 parent = torch.cat((input, torch.zeros(input.shape, device=self.device)), 1)
+                print(parent.shape)
             else:
                 parent = torch.cat((hf[layer-1], hb[layer-1]), 1)
+                print(parent.shape)
 
             for t in range(input.size(1)):
-                print(parent.shape)
                 hidden_layer_f = self.layer_cells_f[layer](
                     parent[:, t, :], hf[layer][t-1])
                 hidden_layer_b = self.layer_cells_b[layer](
-                    parent[:, -(t+1), :], hidden_b[layer])
+                    parent[:, -(t+1), :], hb[layer][-1])
 
-                hidden_f[layer][t] = self.dropout(hidden_layer_f)
-                hidden_b[layer][t] = self.dropout(hidden_layer_b)
+                hf[layer][t] = self.dropout(hidden_layer_f)
+                hf[layer][t] = self.dropout(hidden_layer_b)
 
                 outs_f[t] = hidden_layer_f
                 outs_b[t] = hidden_layer_b
