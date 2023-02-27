@@ -19,6 +19,9 @@ class GRUModel(nn.Module):
     def forward(self, batch):
         # out, _ = self.rnn(batch)
         # out = self.fc(out[:, -1])
-        out = self.rnn(batch)
-        out = self.fc(out)
+        out = self.rnn(batch.transpose(0, 1))
+        # print(out.shape)
+        # print(out[-1].shape)
+        # exit()
+        out = self.fc(out[-1])
         return out

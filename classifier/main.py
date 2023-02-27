@@ -10,7 +10,7 @@ from settings import *
 from training_callbacks.checkpoint import ModelCheckpoint
 from training_callbacks.early_stopping import EarlyStopping
 
-batch_size = 32
+batch_size = 128
 lr = 1e-3
 
 
@@ -22,7 +22,7 @@ if __name__ == '__main__':
                               2.2293, 0.4284, 1.8672, 0.1324, 1.8341, 2.0633, 1.9468, 2.3298, 2.4826,
                               5.3504, 2.0883, 2.9555, 1.9716, 2.0256, 2.6433, 2.5647, 2.0939, 3.5184,
                               2.0443, 0.4850, 8.3871, 0.8428, 1.9109, 2.7907, 1.8762, 2.2166, 2.0661,
-                              1.4963, 3.5184, 1.6385, 7.2505, 3.6168, 3.3658, 2.8840]).to(device)  # recalculate with dataloader.calculate_class_weights
+                              1.4963, 3.5184, 1.6385, 7.2505, 3.6168, 3.3658, 2.8840], device=device) # recalculate with dataloader.calculate_class_weights
     torch.manual_seed(123)
     model = GRUModel(TwitterDataset.num_classes)
     dataloader = DataLoader(dataset=TwitterDataset,
