@@ -10,7 +10,7 @@ from settings import *
 from training_callbacks.checkpoint import ModelCheckpoint
 from training_callbacks.early_stopping import EarlyStopping
 
-batch_size = 16
+batch_size = 128
 lr = 1e-3
 
 

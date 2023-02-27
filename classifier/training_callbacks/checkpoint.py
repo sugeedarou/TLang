@@ -18,5 +18,5 @@ class ModelCheckpoint(TrainingCallback):
 
         if op(metric, self.last_metric):
             return ['save_checkpoint']
-        return False
+        return []
 

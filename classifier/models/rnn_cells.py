@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.autograd import Variable
+import numpy as np
 
 
 class LSTMCell(nn.Module):
@@ -16,12 +18,12 @@ class LSTMCell(nn.Module):
         #4 times as long, because we need it for 4 gates
         self.input_lf = nn.Linear(input_size, hidden_size * 4, bias=bias)
         self.hidden_lf = nn.Linear(hidden_size, hidden_size * 4, bias=bias)
-     #   self.reset_parameters()
+        self.reset_parameters()
 
-    #def reset_parameters(self):
-    #    std = 1.0 / np.sqrt(self.hidden_size)
-    #    for w in self.parameters():
-    #        w.data.uniform_(-std, std)
+    def reset_parameters(self):
+        std = 1.0 / np.sqrt(self.hidden_size)
+        for w in self.parameters():
+            w.data.uniform_(-std, std)
 
     def forward(self, input, h_c_in=None):
         '''
@@ -64,19 +66,17 @@ class GRUCell(nn.Module):
         self.hidden_size = hidden_size
         self.bias = bias
 
-        #3 times the size as 3 times with different weights needed
+        # 3 times the size as 3 times with different weights needed
         self.input_lf = nn.Linear(input_size, 3 * hidden_size, bias=bias)
         self.hidden_lf = nn.Linear(hidden_size, 3 * hidden_size, bias=bias)
+        self.reset_parameters()
 
-        #self.reset_parameters()
+    def reset_parameters(self):
+        std = 1.0 / np.sqrt(self.hidden_size)
+        for w in self.parameters():
+            w.data.uniform_(-std, std)
 
-
-    #def reset_parameters(self):
-    #    std = 1.0 / np.sqrt(self.hidden_size)
-    #    for w in self.parameters():
-    #        w.data.uniform_(-std, std)
-
-    def forward(self, input, h_in=None):
+    def forward(self, input, h_in):
         '''
             :param input:
                 shape (batch_size, input_size)

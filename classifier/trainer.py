@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchmetrics import MetricCollection, Accuracy, Precision, Recall, F1Score
 from torchmetrics import ConfusionMatrix
 from tqdm import tqdm
-from math import floor
+import math
 from pathlib import Path
 from contextlib import nullcontext
 import pandas as pd
@@ -240,6 +240,8 @@ class Trainer():
         return log_metrics_str
 
     def format_num_for_print(self, n):
+        if math.isnan(n):
+            return n
         if n > 1:
             return round(n*100) / 100
         return round(n*1000) / 1000
