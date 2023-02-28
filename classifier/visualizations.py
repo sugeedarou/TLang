@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from twitter_dataset import TwitterDataset
 
 
-ef show_confusion_matrix(confmat, save_path="", save_name="confmat.pdf"):
+def show_confusion_matrix(confmat, save_path="", save_name="confmat.pdf"):
     '''
         plots (and saves) a confusion matrix as combination of numbers and a heatmap
     :param confmat: the confusion matrix

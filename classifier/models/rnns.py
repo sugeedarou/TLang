@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+from models.rnn_cells import GRUCell
 
 class BiGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, dropout=0.0):
