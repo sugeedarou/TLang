@@ -1,6 +1,7 @@
 from settings import *
 from twitter_dataset import TwitterDataset
 from models.rnns import *
+from models.gru_based_models import *
 
 import torch.nn as nn
 
