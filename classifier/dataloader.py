@@ -9,7 +9,10 @@ from settings import *
 
 
 class DataLoader():
-
+    '''
+        loads the already preprocessed data batch-wise,
+        computes class_weights performes circular padding
+    '''
     def __init__(self, dataset, batch_size, tweet_max_characters):
         super().__init__()
         self.dataset = dataset
@@ -94,5 +97,4 @@ class DataLoader():
                         for idx, item in enumerate(batch)])
 
         texts = torch.stack(texts)
-        # print("\n \n texts.size", texts.size(), "\n \n")
         return ids, text_lengths, labels, texts
