@@ -1,6 +1,7 @@
 import torch
 import csv
 import torch.nn.functional as Fun
+import numpy as np
 
 from settings import *
 

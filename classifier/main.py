@@ -3,7 +3,6 @@ import torch.nn as nn
 
 from cyclic_plateau_scheduler import CyclicPlateauScheduler
 from models.gru import GRUModel
-from models.gru_based_models import Transphere_GRUModel_CNN
 from trainer import Trainer
 from twitter_dataset import TwitterDataset
 from dataloader import DataLoader
@@ -11,7 +10,7 @@ from settings import *
 from training_callbacks.checkpoint import ModelCheckpoint
 from training_callbacks.early_stopping import EarlyStopping
 
-batch_size = 64
+batch_size = 128
 lr = 1e-3
 
 
@@ -25,8 +24,7 @@ if __name__ == '__main__':
                               2.0443, 0.4850, 8.3871, 0.8428, 1.9109, 2.7907, 1.8762, 2.2166, 2.0661,
                               1.4963, 3.5184, 1.6385, 7.2505, 3.6168, 3.3658, 2.8840], device=device) # recalculate with dataloader.calculate_class_weights
     torch.manual_seed(123)
-    model1 = GRUModel(TwitterDataset.num_classes)
-    model = Transphere_GRUModel_CNN(TwitterDataset.num_classes, recur_model=model1)
+    model = GRUModel(TwitterDataset.num_classes)
     dataloader = DataLoader(dataset=TwitterDataset,
                             batch_size=batch_size, tweet_max_characters=128)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
