@@ -6,13 +6,19 @@ from settings import *
 
 
 class TwitterDataset(torch.utils.data.Dataset):
-
     class_names = open(LANGUAGES_PATH, 'r', encoding='utf-8', newline='').read().split('\n')[:-1]
     num_classes = len(class_names)
     characters = [l.strip() for l in open(CHARACTERS_PATH, 'r', encoding='utf-8')]
     num_characters = len(characters)
 
     def __init__(self, path, tweet_max_characters):
+        '''
+            translates text to number sequences (size cut by tweet_max_characters)
+            and holds all samples as (id, lang, text) in self.ds
+
+            :param path: string -- syspath: where to read the tweets from
+            :param tweet_max_characters:  cutoff value for tweet length
+        '''
         super().__init__()
 
         def load_data(path):
@@ -33,6 +39,13 @@ class TwitterDataset(torch.utils.data.Dataset):
         self.n_records = len(self.ds)
 
     def __getitem__(self, i):
+        '''
+        :param i: list index of the sample
+        :return: (id, lang, text)
+            - some number representing the tweet
+            - language code (as number)
+            - one hot encoded text, shape (length_tweet, n_encoding_chars)
+        '''
         id, lang, text = self.ds[i]
         text = Fun.one_hot(text, num_classes=TwitterDataset.num_characters + 1).float()
         return id, lang, text
