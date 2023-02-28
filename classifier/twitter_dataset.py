@@ -23,6 +23,7 @@ class TwitterDataset(torch.utils.data.Dataset):
 
         def load_data(path):
             data = []
+            row_counter = 0
             with open(path, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f, delimiter='\t')
                 next(reader)
@@ -33,6 +34,10 @@ class TwitterDataset(torch.utils.data.Dataset):
                     text = text[:tweet_max_characters]
                     text = torch.tensor(text)
                     data.append([id, lang, text])
+                    row_counter += 1
+
+                for i in range(BATCH_SIZE - row_counter % BATCH_SIZE):
+                    data.append(data[np.random.randint(0, row_counter)])
             return data
 
         self.ds = load_data(path)
