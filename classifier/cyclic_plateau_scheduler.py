@@ -1,5 +1,8 @@
 class CyclicPlateauScheduler():
-
+    '''
+        increases the learnrate and drop to initial value periodically
+        when the performance reaches a plateau, the learn rate is reduced (default halfed)
+    '''
     def __init__(self, steps_per_epoch, optimizer, initial_lr=0.001, global_min_lr=1e-8, min_improve_factor=0.999, lr_patience=0, lr_reduce_factor=0.5, lr_reduce_metric='val_loss'):
         super().__init__()
         self.lr = initial_lr
