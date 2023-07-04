@@ -1,6 +1,10 @@
 # TLang
 ## A language classifier for tweets using neural networks
 
+### Slides
+Here you can find the slides of our presentation which explains the different architectures and results
+
+### Setup
 Step 1: Download the dataset files "preprocessing/uniformly_sampled.tsv", "preprocessing/recall_oriented.tsv" and "preprocessing/precision_oriented.tsv" from https://blog.twitter.com/engineering/en_us/a/2015/evaluating-language-identification-performance
 
 Step 2: Run "preprocessing/1_merge_uniform_precision.py" and "preprocessing/2_create_ids_only_files.py"
