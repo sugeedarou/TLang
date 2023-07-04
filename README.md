@@ -2,7 +2,7 @@
 ## A language classifier for tweets using neural networks
 
 ### Slides
-Here you can find the slides of our presentation which explains the different architectures and results
+[Here](https://github.com/sugeedarou/TLang/blob/main/slides.pdf) you can find the slides of our presentation which explains the different architectures and results
 
 ### Setup
 Step 1: Download the dataset files "preprocessing/uniformly_sampled.tsv", "preprocessing/recall_oriented.tsv" and "preprocessing/precision_oriented.tsv" from https://blog.twitter.com/engineering/en_us/a/2015/evaluating-language-identification-performance
