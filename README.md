@@ -1,5 +1,6 @@
 # TLang
 ## A language classifier for tweets using neural networks
+This classifier was created by Robin Waal, Niklas Baier and Linus Schilpp during a practical excercise at KIT University.
 
 ### Slides
 [Here](https://github.com/sugeedarou/TLang/blob/main/slides.pdf) you can find the slides of our presentation which explains the different architectures and results
