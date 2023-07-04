@@ -1,4 +1,5 @@
-# A language classifier for tweets using neural networks
+# TLang
+## A language classifier for tweets using neural networks
 
 Step 1: Download the dataset files "preprocessing/uniformly_sampled.tsv", "preprocessing/recall_oriented.tsv" and "preprocessing/precision_oriented.tsv" from https://blog.twitter.com/engineering/en_us/a/2015/evaluating-language-identification-performance
 
